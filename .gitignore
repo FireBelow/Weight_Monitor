@@ -1,6 +1,7 @@
 #Ignore Private Files
 .json
 private.*
+.txt
 
 #Ignore Data Collected
 .csv
