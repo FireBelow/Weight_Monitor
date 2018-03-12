@@ -11,6 +11,7 @@ import time
 import Adafruit_DHT
 import os.path
 import logging
+import json
 from hx711 import HX711                             # import the class HX711
 from weightfunctions import read_scale, write_file, get_weather, IFTTTmsg
 
@@ -41,7 +42,14 @@ try:
     TODAY = time.strftime("%Y%m%d")
     OUTPUTFILE = "/home/pi/Documents/Code/" + str(TODAY) + "_WeightLog.csv"
     #print(OUTPUTFILE)
-    Headers = "DateTime,WBigMed,WSmlMed,BigTemp,BigHum,SmlTemp,SmlHum,WMain,WDesc,WTemp,WPressure,WHumid,WWindSpd,WWindDir,WRain,WSnow,WVisible,WClouds,WSunrise,WSunset,Solar,UV,Precip1hr,PrecipToday,RawReadB,WBigStd,RawReadS,WSmlStd,Notes\n"
+    jsonfilename = "/home/pi/Documents/Code/private.json"
+    with open(jsonfilename) as jsonfile:
+        jsondata = json.load(jsonfile)          #read json
+        #print(jsondata)
+        #json.dump(newdata, jsonfile)           #write json
+        Headers = jsondata['Headers']
+        #print(Headers)
+    #Headers = "DateTime,WBigMed,WSmlMed,BigTemp,BigHum,SmlTemp,SmlHum,WMain,WDesc,WTemp,WPressure,WHumid,WWindSpd,WWindDir,WRain,WSnow,WVisible,WClouds,WSunrise,WSunset,Solar,UV,Precip1hr,PrecipToday,RawReadB,WBigStd,RawReadS,WSmlStd,Notes\n"
     try:
         open(OUTPUTFILE, 'r')
         print("File already exists")
