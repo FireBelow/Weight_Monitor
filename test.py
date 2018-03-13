@@ -1,6 +1,6 @@
 #!/usr/bin/python3
 
-#test.py
+#BeeHive_Monitor.py
 
 import pandas as pn
 import numpy as np
@@ -14,7 +14,7 @@ import logging
 import json
 import matplotlib.pyplot as plt
 from hx711 import HX711                             # import the class HX711
-from weightfunctions import read_scale, write_file, get_weather, IFTTTmsg
+from beefunctions import read_scale, write_file, get_weather, IFTTTmsg
 
 try:
     #includes = ['*.doc', '*.odt'] # for files only
@@ -31,7 +31,7 @@ try:
             #     print file
             #     print(os.path.join(root, file))
             #     os.path.splitext(os.path.basename(searchfilepath))[0]       #or use dirs
-    inputfilepath = "/home/pi/Documents/Code/20180303_WeightLog.csv"
+    inputfilepath = "/home/pi/Documents/Code/20180303_BeeLog.csv"
     #outputfilepath = "/home/pi/Documents/Code/test.csv"
     COMMA = ","
     datatosave = ""

@@ -3,6 +3,10 @@
 private.*
 .txt
 
+#Ignore Working Files
+test.
+testdata.
+
 #Ignore Data Collected
 .csv
 .jpeg
