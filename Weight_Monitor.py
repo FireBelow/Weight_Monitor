@@ -13,7 +13,7 @@ import os.path
 import logging
 import json
 from hx711 import HX711                             # import the class HX711
-from weightfunctions import read_scale, write_file, get_weather, IFTTTmsg
+from weightfunctions import read_scale, write_file, get_weather, IFTTTmsg, calculate
 
 #TO DO:
 #read last reading and look for crazy deltas
@@ -58,7 +58,7 @@ try:
         #OUTPUTFILE = "/home/pi/Documents/Code/" + str(TODAY) + "_WeightLog.csv"
         print("File does not exist")
         write_file(OUTPUTFILE, 'w', Headers)
-
+        calculate()
 
     #WeatherData = subprocess.check_output(['/home/pi/Documents/Code/weather.sh'], universal_newlines=True)      #univ lines makes the output a text stream
     #WeatherData = WeatherData.replace("\n","")
