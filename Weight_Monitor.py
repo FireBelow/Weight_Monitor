@@ -1,8 +1,8 @@
 #!/usr/bin/python3
 
-#Weight_Monitor.py
+# Weight_Monitor.py
 
-import pandas as pn
+import pandas as pd
 import numpy as np
 import RPi.GPIO as GPIO
 import subprocess
@@ -82,15 +82,34 @@ try:
     SENSOR_TYPE = Adafruit_DHT.DHT22
     BIG_TEMPHUM_PIN = 16    #change to big Pin
     DHT_NUM_READS = 5
+    DHT_STDEV_THRESHOLD = 20
+    RETRY_ATTEMPTS = 7       #number of times to reread sensor to get normal StDev
     #BIGhumidity, BIGtemperature = Adafruit_DHT.read_retry(sensortype, BIG_TEMPHUM_PIN)       #def read_retry(sensor, pin, retries=15, delay_seconds=2, platform=None):
     #print(Adafruit_DHT.read_retry(sensortype, BIG_TEMPHUM_PIN))
     print("Read BIGtemphum")
     BIGtemphum = read_retry_multi(SENSOR_TYPE, BIG_TEMPHUM_PIN, DHT_NUM_READS)        #def read_retry(sensor, pin, retries=15, delay_seconds=2, platform=None):
     #print(BIGtemphum)
-    #print(BIGtemphum[0][0])
-    #print(BIGtemphum[:][0])
     BIGtemperature = [temp * (9 / 5) + 32 for temp, humid in BIGtemphum]       #convert from Celcius to F
     BIGhumidity = [humid for temp, humid in BIGtemphum]
+    print(np.std(BIGtemperature))
+    print(np.std(BIGhumidity))
+    if np.std(BIGtemperature) > DHT_STDEV_THRESHOLD or np.std(BIGhumidity) > DHT_STDEV_THRESHOLD:
+        for i in range(2, RETRY_ATTEMPTS+2):
+            print("TempHum StDev is too high (" + str(round(np.std(BIGtemperature), 2)) + +", " + str(round(np.std(BIGhumidity), 2)) + "), reading again...")
+            BIGtemphum1 = BIGtemphum
+            time.sleep(2)
+            BIGtemphum = read_retry_multi(SENSOR_TYPE, BIG_TEMPHUM_PIN, DHT_NUM_READS)
+            if np.std(BIGtemperature) > DHT_STDEV_THRESHOLD or np.std(BIGhumidity) > DHT_STDEV_THRESHOLD:
+                print("TempHum StDev is still too high")
+                if np.std(BIGtemphum) < np.std(BIGdata_raw1):
+                    BIGtemphum = BIGtemphum1
+                else:
+                    BIGtemphum1 = BIGtemphum
+            else:
+                print("Better reading recorded after " + str(i) + " tries")
+                break
+    else:
+        print("StDev is below threshold of " + str(DHT_STDEV_THRESHOLD))
     #print(BIGtemperature)
     #print(BIGhumidity)
     print(round(np.mean(BIGtemperature), 2), 
@@ -124,7 +143,6 @@ try:
 #        print('Failed to get reading. Try again!')
 
     HX_NUM_READS = 15
-    RETRY_ATTEMPTS = 7       #number of times to reread sensor to get normal StDev
     HX_STDEV_THRESHOLD = 2000
     BIG_DATA_PIN = 21
     BIG_CLOCK_PIN  = 20
