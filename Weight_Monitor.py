@@ -95,13 +95,13 @@ try:
     print(np.std(BIGhumidity))
     if np.std(BIGtemperature) > DHT_STDEV_THRESHOLD or np.std(BIGhumidity) > DHT_STDEV_THRESHOLD:
         for i in range(2, RETRY_ATTEMPTS+2):
-            print("TempHum StDev is too high (" + str(round(np.std(BIGtemperature), 2)) + +", " + str(round(np.std(BIGhumidity), 2)) + "), reading again...")
+            print("TempHum StDev is too high (" + str(round(np.std(BIGtemperature), 2)) +", " + str(round(np.std(BIGhumidity), 2)) + "), reading again...")
             BIGtemphum1 = BIGtemphum
             time.sleep(2)
             BIGtemphum = read_retry_multi(SENSOR_TYPE, BIG_TEMPHUM_PIN, DHT_NUM_READS)
             if np.std(BIGtemperature) > DHT_STDEV_THRESHOLD or np.std(BIGhumidity) > DHT_STDEV_THRESHOLD:
                 print("TempHum StDev is still too high")
-                if np.std(BIGtemphum) < np.std(BIGdata_raw1):
+                if np.std(BIGtemphum) < np.std(BIGtemphum1):
                     BIGtemphum = BIGtemphum1
                 else:
                     BIGtemphum1 = BIGtemphum
