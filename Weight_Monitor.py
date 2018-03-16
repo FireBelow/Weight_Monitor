@@ -107,6 +107,7 @@ try:
                     BIGtemphum1 = BIGtemphum
             else:
                 print("Better reading recorded after " + str(i) + " tries")
+                logger.info("Big DHT Retries: " + str(i))
                 break
     else:
         print("StDev is below threshold of " + str(DHT_STDEV_THRESHOLD))
@@ -162,6 +163,7 @@ try:
                     BIGdata_raw1 = BIGdata_raw
             else:
                 print("Better reading recorded after " + str(i) + " tries")
+                logger.info("Big HX Retries: " + str(i))
                 break
     else:
         print("StDev is below threshold of " + str(HX_STDEV_THRESHOLD))
@@ -193,6 +195,7 @@ try:
                     SMLdata_raw1 = SMLdata_raw
             else:
                 print("Better reading recorded after " + str(i) + " tries")
+                logger.info("Sml HX Retries: " + str(i))
                 break
     else:
         print("StDev is below threshold of " + str(HX_STDEV_THRESHOLD))
