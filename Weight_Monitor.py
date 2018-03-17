@@ -74,7 +74,7 @@ try:
         while len(data_list) < num_reads:
             humidity, temperature = Adafruit_DHT.read_retry(sensor, pin, retries, delay_seconds, platform)
             if humidity is not None and temperature is not None:
-                TempHum = (round(humidity,2), round(temperature,2))
+                TempHum = (round(humidity, 2), round(temperature, 2))
                 data_list.append(TempHum)
 
         return data_list
@@ -94,10 +94,10 @@ try:
     print(np.std(BIGtemperature))
     print(np.std(BIGhumidity))
     if np.std(BIGtemperature) > DHT_STDEV_THRESHOLD or np.std(BIGhumidity) > DHT_STDEV_THRESHOLD:
-        for i in range(2, RETRY_ATTEMPTS+2):
-            print("TempHum StDev is too high (" + str(round(np.std(BIGtemperature), 2)) +", " + str(round(np.std(BIGhumidity), 2)) + "), reading again...")
+        for i in range(2, RETRY_ATTEMPTS + 2):
+            print("TempHum StDev is too high (" + str(round(np.std(BIGtemperature), 2)) + ", " + str(round(np.std(BIGhumidity), 2)) + "), reading again...")
             BIGtemphum1 = BIGtemphum
-            time.sleep(2)
+            time.sleep(3)
             BIGtemphum = read_retry_multi(SENSOR_TYPE, BIG_TEMPHUM_PIN, DHT_NUM_READS)
             if np.std(BIGtemperature) > DHT_STDEV_THRESHOLD or np.std(BIGhumidity) > DHT_STDEV_THRESHOLD:
                 print("TempHum StDev is still too high")
@@ -109,6 +109,9 @@ try:
                 print("Better reading recorded after " + str(i) + " tries")
                 logger.info("Big DHT Retries: " + str(i))
                 break
+        if i >= RETRY_ATTEMPTS:
+            logger.info(str(i) + " retries for BigDHT & stdevs(T&H): " + str(np.std(BIGtemperature)) + " " + str(np.std(BIGhumidity)))
+            IFTTTmsg(str(i) + " retries for BigDHT")
     else:
         print("StDev is below threshold of " + str(DHT_STDEV_THRESHOLD))
     # print(BIGtemperature)
@@ -122,7 +125,7 @@ try:
 
     SML_TEMPHUM_PIN = 13
     print("Read SMLtemphum")
-    SMLtemphum = [(0, 0)]#read_retry_multi(SENSOR_TYPE, SML_TEMPHUM_PIN, DHT_NUM_READS)        #def read_retry(sensor, pin, retries=15, delay_seconds=2, platform=None):
+    SMLtemphum = [(0, 0)]   # read_retry_multi(SENSOR_TYPE, SML_TEMPHUM_PIN, DHT_NUM_READS)        #def read_retry(sensor, pin, retries=15, delay_seconds=2, platform=None):
     # print(SMLtemphum)
     # print(SMLtemphum[0][0])
     # print(SMLtemphum[:][0])
@@ -146,11 +149,11 @@ try:
     HX_NUM_READS = 15
     HX_STDEV_THRESHOLD = 2000
     BIG_DATA_PIN = 21
-    BIG_CLOCK_PIN  = 20
+    BIG_CLOCK_PIN = 20
 
     BIGdata_raw = read_scale(READINGS=HX_NUM_READS, DATAPIN=BIG_DATA_PIN, CLOCKPIN=BIG_CLOCK_PIN)        #Read big scale
     if np.std(BIGdata_raw) > HX_STDEV_THRESHOLD:
-        for i in range(2, RETRY_ATTEMPTS+2):
+        for i in range(2, RETRY_ATTEMPTS + 2):
             print("Scale StDev is too high (" + str(round(np.std(BIGdata_raw), 2)) + "), reading again...")
             BIGdata_raw1 = BIGdata_raw
             time.sleep(2)
@@ -158,13 +161,17 @@ try:
             if np.std(BIGdata_raw) > HX_STDEV_THRESHOLD:
                 print("Scale StDev is still too high")
                 if np.std(BIGdata_raw) < np.std(BIGdata_raw1):
-                    BIGdata_raw = BIGdata_raw1
-                else:
                     BIGdata_raw1 = BIGdata_raw
+                else:
+                    BIGdata_raw = BIGdata_raw1
             else:
                 print("Better reading recorded after " + str(i) + " tries")
                 logger.info("Big HX Retries: " + str(i))
                 break
+        if i >= RETRY_ATTEMPTS + 2:
+            logger.info(str(i) + " retries for BigHX & stdev: " + str(np.std(BIGdata_raw)))
+            IFTTTmsg(str(i) + " retries for BigHX")
+            BIGdata_raw = BIGdata_raw1
     else:
         print("StDev is below threshold of " + str(HX_STDEV_THRESHOLD))
     print(np.median(BIGdata_raw))
@@ -182,7 +189,7 @@ try:
     # print("Read Small Scale")
     SMLdata_raw = read_scale(READINGS=HX_NUM_READS, DATAPIN=SML_DATA_PIN, CLOCKPIN=SML_CLOCK_PIN)      # Read small scale
     if np.std(SMLdata_raw) > HX_STDEV_THRESHOLD:
-        for i in range(2, RETRY_ATTEMPTS+2):
+        for i in range(2, RETRY_ATTEMPTS + 2):
             print("Scale StDev is too high (" + str(round(np.std(SMLdata_raw), 2)) + "), reading again...")
             SMLdata_raw1 = SMLdata_raw
             time.sleep(2)
@@ -190,13 +197,17 @@ try:
             if np.std(SMLdata_raw) > HX_STDEV_THRESHOLD:
                 print("Scale StDev is still too high")
                 if np.std(SMLdata_raw) < np.std(SMLdata_raw1):
-                    SMLdata_raw = SMLdata_raw1
-                else:
                     SMLdata_raw1 = SMLdata_raw
+                else:
+                    SMLdata_raw = SMLdata_raw1
             else:
                 print("Better reading recorded after " + str(i) + " tries")
                 logger.info("Sml HX Retries: " + str(i))
                 break
+        if i >= RETRY_ATTEMPTS:
+            logger.info(str(i) + " retries for SmlHX & stdev: " + str(np.std(SMLdata_raw)))
+            IFTTTmsg(str(i) + " retries for SmlHX")
+            SMLdata_raw = SMLdata_raw1
     else:
         print("StDev is below threshold of " + str(HX_STDEV_THRESHOLD))
     print(np.median(SMLdata_raw))

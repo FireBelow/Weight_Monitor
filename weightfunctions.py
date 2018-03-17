@@ -101,7 +101,7 @@ def get_weather():
 
         jsonfilename = "/home/pi/Documents/Code/private.json"
         with open(jsonfilename) as jsonfile:
-            jsondata = json.load(jsonfile)          #read json
+            jsondata = json.load(jsonfile)          # read json
             # print(jsondata)
             # json.dump(newdata, jsonfile)           #write json
             Zip_Code = jsondata['weather']['zipcode']
@@ -110,20 +110,6 @@ def get_weather():
             # print(Zip_Code)
             # print(WeatherKeyWOpen)
             # print(WeatherKeyWUnder)
-
-        # ZIP_CODE_PATH="/home/pi/Documents/Code/ZipCode.key"
-        # KEY_PATH_WOPEN="/home/pi/Documents/Code/Weather.key"
-        # KEY_PATH_WUNDER="/home/pi/Documents/Code/WeatherUnder.key"
-
-        # with open(ZIP_CODE_PATH, 'r') as file:
-        #     Zip_Code = file.read()
-        # #print(Zip_Code)
-        # with open(KEY_PATH_WOPEN, 'r') as file:
-        #     WeatherKeyWOpen = file.read()
-        # #print(WeatherKeyWOpen)
-        # with open(KEY_PATH_WUNDER, 'r') as file:
-        #     WeatherKeyWUnder = file.read()
-        # #print(WeatherKeyWUnder)
 
         print("Get OpenWeather")
         weather_URL_open = "http://api.openweathermap.org/data/2.5/weather?zip=" + Zip_Code + "&appid=" + WeatherKeyWOpen + "&units=imperial"
@@ -420,6 +406,10 @@ def calculate():
         # print(headers)
         # print(currentcolumndata)
         # print(datatosave)
+
+        # if filecontents.column.max() > filecontents.column.quartile(.75):
+        #     print(str(filecontents.column.name) + " contains outliers")
+        #     IFTTTmsg(str(filecontents.column.name) + " contains outliers")
 
         try:
             open(outputfilepath_Daily, 'r')
