@@ -110,7 +110,8 @@ try:
                 logger.info("Big DHT Retries: " + str(i))
                 break
         if i >= RETRY_ATTEMPTS:
-            logger.info(str(i) + " retries for BigDHT & stdevs(T&H): " + str(np.std(BIGtemperature)) + " " + str(np.std(BIGhumidity)))
+            logger.info(str(i) + " retries for BigDHT & stdevs(T&H): " + str(round(np.std(BIGtemperature), 2)) + " " + str(round(np.std(BIGhumidity), 2)))
+            logger.info(str(BIGtemphum))
             IFTTTmsg(str(i) + " retries for BigDHT")
     else:
         print("StDev is below threshold of " + str(DHT_STDEV_THRESHOLD))
@@ -169,7 +170,7 @@ try:
                 logger.info("Big HX Retries: " + str(i))
                 break
         if i >= RETRY_ATTEMPTS + 2:
-            logger.info(str(i) + " retries for BigHX & stdev: " + str(np.std(BIGdata_raw)))
+            logger.info(str(i) + " retries for BigHX & stdev: " + str(round(np.std(BIGdata_raw), 2)))
             IFTTTmsg(str(i) + " retries for BigHX")
             BIGdata_raw = BIGdata_raw1
     else:
@@ -205,7 +206,7 @@ try:
                 logger.info("Sml HX Retries: " + str(i))
                 break
         if i >= RETRY_ATTEMPTS:
-            logger.info(str(i) + " retries for SmlHX & stdev: " + str(np.std(SMLdata_raw)))
+            logger.info(str(i) + " retries for SmlHX & stdev: " + str(round(np.std(SMLdata_raw), 2)))
             IFTTTmsg(str(i) + " retries for SmlHX")
             SMLdata_raw = SMLdata_raw1
     else:
