@@ -1,7 +1,7 @@
 #Ignore Private Files
-.json
+*.json
 private.*
-.txt
+*.txt
 
 #Ignore Working Files
 test.*
@@ -10,15 +10,15 @@ Log/
 Old/
 
 #Ignore Data Collected
-.csv
-.jpeg
-.png
-.jpg
+*.csv
+*.jpeg
+*.png
+*.jpg
 Daily/
 Graphs/
 
 #Ignore Old Shell Files
-.sh
+*.sh
 
 #Ignore Other Files
 __pycache__/
