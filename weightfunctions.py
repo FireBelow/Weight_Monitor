@@ -316,7 +316,7 @@ def calculate():
         YEAR = YESTERDAY[0:4]
         # print(YESTERDAY)
         inputfilepath = "/home/pi/Documents/Code/" + YESTERDAY + "_WeightLog.csv"
-        # inputfilepath = "/home/pi/Documents/Code/20180311_WeightLog.csv"
+        # inputfilepath = "/home/pi/Documents/Code/20180314_WeightLog.csv"
         outputfilepath_Daily = "/home/pi/Documents/Code/" + YEAR + "_DailyStats.csv"
         outputfilepath_Yearly = "/home/pi/Documents/Code/" + YEAR + "_WeightLog.csv"
         COMMA = ","

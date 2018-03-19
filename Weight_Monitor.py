@@ -47,7 +47,7 @@ try:
         jsondata = json.load(jsonfile)          # read json
         # print(jsondata)
         # json.dump(newdata, jsonfile)           #write json
-        Headers = jsondata['Headers']
+        Headers = jsondata['Headers']['All']
         # print(Headers)
     # Headers = "DateTime,WBigMed,WSmlMed,BigTemp,BigHum,SmlTemp,SmlHum,WMain,WDesc,WTemp,WPressure,WHumid,WWindSpd,WWindDir,WRain,WSnow,WVisible,WClouds,WSunrise,WSunset,Solar,UV,Precip1hr,PrecipToday,RawReadB,WBigStd,RawReadS,WSmlStd,Notes\n"
     try:
@@ -221,9 +221,9 @@ try:
     # print(round(np.median(SMLdata), 2))
 
     COMMA = ','
-    AllData = time.strftime("%Y-%m-%d-%H-%M-%S")+COMMA                 \
-        + str(round(np.median(BIGdata),2))+COMMA                \
-        + str(round(np.median(SMLdata),2))+COMMA                \
+    AllData = time.strftime("%Y-%m-%d-%H-%M-%S")+COMMA          \
+        + str(round(np.median(BIGdata), 2))+COMMA               \
+        + str(round(np.median(SMLdata), 2))+COMMA               \
         + str(round(np.median(BIGtemperature), 2))+COMMA        \
         + str(round(np.median(BIGhumidity), 2))+COMMA           \
         + str(round(np.median(SMLtemperature), 2))+COMMA        \
@@ -237,6 +237,8 @@ try:
     # write_file(OUTPUTFILE, 'a', Headers)       #to update headers in the middle of the file
     write_file(OUTPUTFILE, 'a', AllData)
     # IFTTTmsg("WeightMonitor Success!")
+
+    # calculate()     # use if need to force a calculate
 
 except:
     IFTTTmsg("WeightMonitor Exception")
