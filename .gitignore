@@ -6,12 +6,16 @@ private.*
 #Ignore Working Files
 test.*
 testdata.*
+Log/
+Old/
 
 #Ignore Data Collected
 .csv
 .jpeg
 .png
 .jpg
+Daily/
+Graphs/
 
 #Ignore Old Shell Files
 .sh
@@ -19,3 +23,4 @@ testdata.*
 #Ignore Other Files
 __pycache__/
 exclude/
+Topo/
