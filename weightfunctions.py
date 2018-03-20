@@ -118,6 +118,11 @@ def get_weather():
         for i in range(3):
             WeatherStringOpen = requests.get(weather_URL_open, timeout=15)
             # print(WeatherStringOpen.json())
+            if WeatherStringOpen.status_code != 200:
+                print("Bad web response " + str(WeatherStringOpen.status_code))
+                IFTTTmsg("Bad web response " + str(WeatherStringOpen.status_code))
+                # Retry
+                WeatherStringOpen = requests.get(weather_URL_open, timeout=15)
             weather_data_open = json.loads(WeatherStringOpen.text)
             # print(weather_data_open)
             # print(weather_data_open.keys())
@@ -126,11 +131,8 @@ def get_weather():
 
             if weather_data_open:
                 print("WeatherOpen data exists")
-                cod_response = weather_data_open["cod"]
+                # cod_response = weather_data_open["cod"]
                 # print(cod_response)
-                if cod_response != 200:
-                    print("bad web response")
-                    IFTTTmsg(check_web_response(cod_response))
                 weather_output = ""
                 main = weather_data_open["weather"][0]["main"]
                 # print(main)
@@ -439,3 +441,11 @@ def calculate():
 
     finally:
         print("Done!")
+
+
+def weather_date_only(date_list):
+        history_dates = []
+        for i in date_list:
+            history_dates.append(i.split("T")[0])
+            # print(history_dates)
+        return history_dates
