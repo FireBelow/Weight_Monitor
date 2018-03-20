@@ -13,7 +13,7 @@ import Adafruit_DHT
 import logging
 import json
 # from hx711 import HX711                             # import the class HX711
-from weightfunctions import read_scale, write_file, get_weather, IFTTTmsg, calculate, check_web_response
+from weightfunctions import read_scale, write_file, get_weather, IFTTTmsg, calculate, check_web_response, weather_date_only
 
 # TO DO:
 # read last reading and look for crazy deltas
@@ -83,6 +83,8 @@ try:
     BIG_TEMPHUM_PIN = 16    # change to big Pin
     DHT_NUM_READS = 5
     DHT_STDEV_THRESHOLD = 20
+    DHT_THRESHOLD_TEMP_MAX = 1000
+    DHT_THRESHOLD_HUM_MAX = 101
     RETRY_ATTEMPTS = 7       # number of times to reread sensor to get normal StDev
     # BIGhumidity, BIGtemperature = Adafruit_DHT.read_retry(sensortype, BIG_TEMPHUM_PIN)       #def read_retry(sensor, pin, retries=15, delay_seconds=2, platform=None):
     # print(Adafruit_DHT.read_retry(sensortype, BIG_TEMPHUM_PIN))
@@ -91,8 +93,7 @@ try:
     # print(BIGtemphum)
     BIGtemperature = [temp * (9 / 5) + 32 for temp, humid in BIGtemphum]       # convert from Celcius to F
     BIGhumidity = [humid for temp, humid in BIGtemphum]
-    print(np.std(BIGtemperature))
-    print(np.std(BIGhumidity))
+    print(round(np.std(BIGtemperature), 2), round(np.std(BIGhumidity), 2))
     if np.std(BIGtemperature) > DHT_STDEV_THRESHOLD or np.std(BIGhumidity) > DHT_STDEV_THRESHOLD:
         for i in range(2, RETRY_ATTEMPTS + 2):
             print("TempHum StDev is too high (" + str(round(np.std(BIGtemperature), 2)) + ", " + str(round(np.std(BIGhumidity), 2)) + "), reading again...")
@@ -124,13 +125,23 @@ try:
           round(np.median(BIGhumidity), 2),
           round(np.std(BIGhumidity), 2))
 
+    # Check for abnormal values
+    if np.median(BIGtemperature) > DHT_THRESHOLD_TEMP_MAX:
+        logger.info("Super high Big Temp: " + str(np.median(BIGtemperature)))
+        IFTTTmsg("Super high Big Temp")
+        BIGtemperature = [np.nan]
+    if np.median(BIGhumidity) > DHT_THRESHOLD_HUM_MAX:
+        logger.info("Super high Big Temp: " + str(np.median(BIGhumidity)))
+        IFTTTmsg("Super high Big Hum")
+        BIGhumidity = [np.nan]
+
     SML_TEMPHUM_PIN = 13
     print("Read SMLtemphum")
     SMLtemphum = [(0, 0)]   # read_retry_multi(SENSOR_TYPE, SML_TEMPHUM_PIN, DHT_NUM_READS)        #def read_retry(sensor, pin, retries=15, delay_seconds=2, platform=None):
     # print(SMLtemphum)
     # print(SMLtemphum[0][0])
     # print(SMLtemphum[:][0])
-    SMLtemperature = [temp * (9 / 5) + 32 for temp, humid in SMLtemphum]       #convert from Celcius to F
+    SMLtemperature = [temp * (9 / 5) + 32 for temp, humid in SMLtemphum]       # convert from Celcius to F
     SMLhumidity = [humid for temp, humid in SMLtemphum]
     # print(SMLtemperature)
     # print(SMLhumidity)
@@ -152,13 +163,13 @@ try:
     BIG_DATA_PIN = 21
     BIG_CLOCK_PIN = 20
 
-    BIGdata_raw = read_scale(READINGS=HX_NUM_READS, DATAPIN=BIG_DATA_PIN, CLOCKPIN=BIG_CLOCK_PIN)        #Read big scale
+    BIGdata_raw = read_scale(READINGS=HX_NUM_READS, DATAPIN=BIG_DATA_PIN, CLOCKPIN=BIG_CLOCK_PIN)        # Read big scale
     if np.std(BIGdata_raw) > HX_STDEV_THRESHOLD:
         for i in range(2, RETRY_ATTEMPTS + 2):
             print("Scale StDev is too high (" + str(round(np.std(BIGdata_raw), 2)) + "), reading again...")
             BIGdata_raw1 = BIGdata_raw
             time.sleep(2)
-            BIGdata_raw = read_scale(READINGS=HX_NUM_READS, DATAPIN=BIG_DATA_PIN, CLOCKPIN=BIG_CLOCK_PIN)        #Read big scale again
+            BIGdata_raw = read_scale(READINGS=HX_NUM_READS, DATAPIN=BIG_DATA_PIN, CLOCKPIN=BIG_CLOCK_PIN)        # Read big scale again
             if np.std(BIGdata_raw) > HX_STDEV_THRESHOLD:
                 print("Scale StDev is still too high")
                 if np.std(BIGdata_raw) < np.std(BIGdata_raw1):
@@ -170,15 +181,15 @@ try:
                 logger.info("Big HX Retries: " + str(i))
                 break
         if i >= RETRY_ATTEMPTS + 2:
-            logger.info(str(i) + " retries for BigHX & stdev: " + str(round(np.std(BIGdata_raw), 2)))
+            logger.info(str(i) + " retries for BigHX & stdev: "
+                        + str(round(np.std(BIGdata_raw), 2)))
             IFTTTmsg(str(i) + " retries for BigHX")
             BIGdata_raw = BIGdata_raw1
     else:
         print("StDev is below threshold of " + str(HX_STDEV_THRESHOLD))
-    print(np.median(BIGdata_raw))
-    print(round(np.std(BIGdata_raw), 2))
+    print(round(np.median(BIGdata_raw), 2), round(np.std(BIGdata_raw), 2))
     BIGdata = 0.0002311996 * np.median(BIGdata_raw) + 7.4413911706      # convert raw to meaningful
-    # print(round(np.median(BIGdata), 2))
+    print(round(np.median(BIGdata), 2))
     # BIGoffset = 0.0249121084 * np.median(BIGtemperature) - 2.4013925301        # temp calibration with slightly larger temp range but also more nosie
     BIGoffset = 0.0206347975 * np.median(BIGtemperature) - 2.0311528126     # temp calibration with smaller range but really good R^2
     # print(round(np.median(BIGoffset), 2))
@@ -211,8 +222,7 @@ try:
             SMLdata_raw = SMLdata_raw1
     else:
         print("StDev is below threshold of " + str(HX_STDEV_THRESHOLD))
-    print(np.median(SMLdata_raw))
-    print(round(np.std(SMLdata_raw), 2))
+    print(round(np.median(SMLdata_raw), 2), round(np.std(SMLdata_raw), 2))
     SMLdata = 0.0001398789 * np.median(SMLdata_raw) + 208.9558945667      # convert raw to meaningful
     print(round(np.median(SMLdata), 2))
     SMLoffset = -0.0033135985 * np.median(BIGtemperature) + 0.357458148      # temp calibration with fewer data points than big scale
