@@ -76,7 +76,7 @@ try:
             if humidity is not None and temperature is not None:
                 TempHum = (round(humidity, 2), round(temperature, 2))
                 data_list.append(TempHum)
-
+                time.sleep(2)
         return data_list
 
     SENSOR_TYPE = Adafruit_DHT.DHT22
@@ -97,6 +97,7 @@ try:
     if np.std(BIGtemperature) > DHT_STDEV_THRESHOLD or np.std(BIGhumidity) > DHT_STDEV_THRESHOLD:
         for i in range(2, RETRY_ATTEMPTS + 2):
             print("TempHum StDev is too high (" + str(round(np.std(BIGtemperature), 2)) + ", " + str(round(np.std(BIGhumidity), 2)) + "), reading again...")
+            print(BIGtemphum)
             BIGtemphum1 = BIGtemphum
             time.sleep(3)
             BIGtemphum = read_retry_multi(SENSOR_TYPE, BIG_TEMPHUM_PIN, DHT_NUM_READS)
