@@ -1,6 +1,8 @@
 #!/usr/bin/python3
 
 # WeightFunctions.py
+# read_scale, write_file, check_web_response, get_weather, IFTTTmsg,
+# requests_retry_session, logger_setup, calculate, weather_date_only
 
 import pandas as pd
 import numpy as np
@@ -257,27 +259,20 @@ def IFTTTmsg(MSG):
     requests.post(IFTTT_website, data=payload)
 
 
-def requests_retry_session(
-    retries=3,
-    backoff_factor=0.3,
-    status_forcelist=(500, 502, 504),
-    session=None,
-):
+def requests_retry_session(retries=3, backoff_factor=0.3,
+                           status_forcelist=(500, 502, 504),
+                           session=None):
     session = session or requests.Session()
-    retry = Retry(
-        total=retries,
-        read=retries,
-        connect=retries,
-        backoff_factor=backoff_factor,
-        status_forcelist=status_forcelist,
-    )
+    retry = Retry(total=retries, read=retries, connect=retries,
+                  backoff_factor=backoff_factor,
+                  status_forcelist=status_forcelist)
     adapter = HTTPAdapter(max_retries=retry)
     session.mount('http://', adapter)
     session.mount('https://', adapter)
     return session
 
-# make logger setup function
-def  logger_setup(SCRIPTNAME, logger_level="info"):
+
+def logger_setup(SCRIPTNAME, logger_level="info"):
     if logger_level == "debug":
         logger.setLevel(logging.DEBUG)
     if logger_level == "info":
@@ -320,11 +315,25 @@ def calculate():
         inputfilepath = "/home/pi/Documents/Code/" + YESTERDAY + "_WeightLog.csv"
         # inputfilepath = "/home/pi/Documents/Code/20180314_WeightLog.csv"
         outputfilepath_Daily = "/home/pi/Documents/Code/" + YEAR + "_DailyStats.csv"
-        outputfilepath_Yearly = "/home/pi/Documents/Code/" + YEAR + "_WeightLog.csv"
+        outputfilepath_Yearly_csv = "/home/pi/Documents/Code/" + YEAR + "_WeightLog.csv"
+        outputfilepath_Yearly_xlsx = "/home/pi/Documents/Code/" + YEAR + "_WeightLog.xlsx"
         COMMA = ","
         datatosave = ""
         headers = ""
-        observationthreshold = 12 * 24  # obs every 5 min per hour times 24 hrs
+        observationthreshold = (12 * 24) * 0.9  # 90% of observation every 5 min each hour times 24 hrs
+
+        def clean_daily_log(DailyLogFile):
+            with open(DailyLogFile, "r") as inputfile:
+                # print(inputfile)
+                filecontents = pd.read_csv(inputfile, delimiter=',', index_col="DateTime", parse_dates=True, dayfirst=False)
+            print(filecontents.info())
+            Q1 = round(filecontents[column].quantile(.25), 2)
+            Q3 = round(filecontents[column].quantile(.75), 2)
+            low_outlier_threshold = Q1-(1.5*(Q3-Q1))
+            high_outlier_threshold = Q3+(1.5*(Q3-Q1))
+            print(low_outlier_threshold, high_outlier_threshold)
+            print(filecontents["WBigMed" > high_outlier_threshold])
+            print(filecontents["WBigMed" < low_outlier_threshold])
 
         print("Calculate Stats on Daily Readings")
         logger.info("Read CSV")
@@ -363,7 +372,9 @@ def calculate():
         if filedate == firstdateinfile:
             print("Filename and Datalog Dates Match!")
         else:
-            print("Not a match")
+            print("Filename and Datalog Dates Not a match")
+            IFTTTmsg("Filename and Datalog Dates Not a match")
+            logger.info("Filename and Datalog Dates Not a match")
         logger.info("Calc Stats")
         for column in filecontents.columns:
             # print(type(filecontents[column]))
@@ -377,11 +388,11 @@ def calculate():
                 Min = str(round(filecontents[column].min(), 2))
                 Max = str(round(filecontents[column].max(), 2))
                 Q1 = str(round(filecontents[column].quantile(.25), 2))
-                Q4 = str(round(filecontents[column].quantile(.75), 2))
-                IQR = str(round(float(Q4) - float(Q1), 2))      # Inner Quartile Range (spread measure with Median)
+                Q3 = str(round(filecontents[column].quantile(.75), 2))
+                IQR = str(round(float(Q3) - float(Q1), 2))      # Inner Quartile Range (spread measure with Median)
                 Count = str(round(filecontents[column].count(), 2))
-                headers = headers+column+"-Mean,"+column+"-Median,"+column+"-Std,"+column+"-Min,"+column+"-Max,"+column+"-Q1,"+column+"-Q4,"+column+"-IQR,"+column+"-Count"+COMMA
-                currentcolumndata = Mean + COMMA + Median + COMMA + Stdev + COMMA + Min + COMMA + Max + COMMA + Q1 + COMMA + Q4 + COMMA + IQR + COMMA + Count
+                headers = headers+column+"-Mean,"+column+"-Median,"+column+"-Std,"+column+"-Min,"+column+"-Max,"+column+"-Q1,"+column+"-Q3,"+column+"-IQR,"+column+"-Count"+COMMA
+                currentcolumndata = Mean + COMMA + Median + COMMA + Stdev + COMMA + Min + COMMA + Max + COMMA + Q1 + COMMA + Q3 + COMMA + IQR + COMMA + Count
                 datatosave = datatosave + COMMA + currentcolumndata
 
                 # print("Mean:" + Mean)
@@ -390,7 +401,7 @@ def calculate():
                 # print("Min:" + Min)
                 # print("Max:" + Max)
                 # print("Q1:" + Q1)
-                # print("Q4:" + Q4)
+                # print("Q3:" + Q3)
                 # print("Count:" + Count)
                 # print(headers)
                 # print(currentcolumndata)
@@ -400,7 +411,7 @@ def calculate():
                 else:
                     if not filecontents[column].dtypes == np.float or not filecontents[column].dtypes == np.int:
                         print("Add string column: " + column)
-                        headers = headers+column+"-Mean,"+column+"-Median,"+column+"-Std,"+column+"-Min,"+column+"-Max,"+column+"-Q1,"+column+"-Q4,"+column+"-IQR,"+column+"-Count"+COMMA
+                        headers = headers+column+"-Mean,"+column+"-Median,"+column+"-Std,"+column+"-Min,"+column+"-Max,"+column+"-Q1,"+column+"-Q3,"+column+"-IQR,"+column+"-Count"+COMMA
                         currentcolumndata = ",,,,,,,,"
                         datatosave = datatosave + COMMA + currentcolumndata
         headers = "DateTime," + headers + "\n"
@@ -421,17 +432,25 @@ def calculate():
             write_file(outputfilepath_Daily, 'w', headers)
 
         try:
-            open(outputfilepath_Yearly, 'r')
+            open(outputfilepath_Yearly_csv, 'r')
             print("File already exists")
         except:
             print("File does not exist")
-            write_file(outputfilepath_Yearly, 'w', headers)
+            write_file(outputfilepath_Yearly_csv, 'w', headers)
 
-        logger.info("Write data to file")
+        try:
+            open(outputfilepath_Yearly_xlsx, 'r')
+            print("File already exists")
+        except:
+            print("File does not exist")
+            write_file(outputfilepath_Yearly_xlsx, 'w', headers)
+
+        logger.info("Write calc data to file")
         # write_file(outputfilepath_Daily, 'a', headers)       #useful for testing header changes
         write_file(outputfilepath_Daily, 'a', datatosave)
 
-        filecontents.iloc[1:].to_csv(outputfilepath_Yearly, mode='a', index=False, sep=",")
+        filecontents.iloc[1:].to_csv(outputfilepath_Yearly_csv, mode='a', index=False, sep=",")
+        filecontents.iloc[1:].to_excel(outputfilepath_Yearly_xlsx, mode='a', index=False)
 
     except:
         IFTTTmsg("Calculate Exception")
