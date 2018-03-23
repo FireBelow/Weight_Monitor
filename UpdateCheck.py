@@ -1,6 +1,6 @@
 #!/usr/bin/python3
 
-#UpdateCheck.py
+# UpdateCheck.py
 
 import pandas as pn
 import subprocess
@@ -8,35 +8,36 @@ import datetime
 import time
 import os.path
 import logging
-from weightfunctions import read_scale, write_file, get_weather, IFTTTmsg
-
-#TO DO:
-#read last reading and look for crazy deltas
-#watch for huge and negative weights
-#initialize variables
-#log exceptions details and errors
-#make script to check if log updates are current, use tail()
+from weightfunctions import read_scale, write_file, get_weather, IFTTTmsg, calculate, check_web_response
 
 try:
     logger = logging.getLogger("WeightMonitor.UpdateCheck.add")
-    logger.info("reading scale")
+    logger.info("Checking if data is Current and Updating")
 
-    TODAY = time.strftime("%Y%m%d")
-    FILENAME = "/home/pi/Documents/Code/" + str(TODAY) + "_WeightLog.csv"
     UPDATETHRESHOLD = 20
-    with open(FILENAME, 'r') as file:       #recommended way to open files to ensure the file closes properly
-        filecontents = pn.read_csv(FILENAME, delimiter=',')     #nrows=5
-    #print(filecontents)
-    #print(filecontents['DateTime'][-1])
-    #print(filecontents['DateTime'][0])
+    TODAY = time.strftime("%Y%m%d")
+    INPUTFILENAME = "/home/pi/Documents/Code/" + str(TODAY) + "_WeightLog.csv"
+    try:
+        open(INPUTFILENAME, 'r')
+        print("File exists")
+    except:
+        # TODAY = time.strftime("%Y%m%d")
+        # OUTPUTFILE = "/home/pi/Documents/Code/" + str(TODAY) + "_WeightLog.csv"
+        print("File does not exist")
+        IFTTTmsg("NO LOG FILE FOR TODAY")
+    with open(INPUTFILENAME, 'r') as file:       # recommended way to open files to ensure the file closes properly
+        filecontents = pn.read_csv(INPUTFILENAME, delimiter=',')     # nrows=5
+    # print(filecontents)
+    # print(filecontents['DateTime'][-1])
+    # print(filecontents['DateTime'][0])
 
 #    add print(filecontents.value_count())
 
-    for row in filecontents["DateTime"]:        #this is inefficient but works
-        #print(row)
+    for row in filecontents["DateTime"]:        # this is inefficient but works
+        # print(row)
         lastdatetime = row
 
-    #print(lastdatetime)
+    # print(lastdatetime)
     lastdatetime_parts = lastdatetime.split('-')
     lastdatetime_parts = list(map(int, lastdatetime_parts))
     print(lastdatetime_parts)
@@ -61,7 +62,7 @@ try:
                             print("Minute BAD")
                             IFTTTproblem = "WeightLog: Last reading +" + str(UPDATETHRESHOLD) + " min old"
                             IFTTTmsg(IFTTTproblem)
-
+                            logger.info(IFTTTproblem)
                         else:
                             print("Acceptable Old Reading (<" + str(UPDATETHRESHOLD) + "min)")
                 else:
@@ -69,24 +70,27 @@ try:
                         print("Hour BAD")
                         IFTTTproblem = "WeightLog: Last reading over an HOUR old"
                         IFTTTmsg(IFTTTproblem)
+                        logger.info(IFTTTproblem)
                     else:
                         print("Acceptable Hour Old Reading???")
+                        logger.info("Acceptable Hour Old Reading???")
             else:
                 print("Day BAD")
+                logger.info("Is the log over a day old?!!!!")
         else:
             print("Month BAD")
     else:
         print("Year BAD")
 
-    IFTTTmsg("Log Updating Correctly")
+    # IFTTTmsg("Log Updating Correctly")
 
-    #if there is old data call the Weight monitor again
+    # if there is old data call the Weight monitor again
 
 except:
     IFTTTmsg("UpdateCheck Exception")
     logging.exception("UpdateCheck Exception")
     raise
-    #print("Exception")
+    # print("Exception")
 
 finally:
     print("Done!")
