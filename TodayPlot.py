@@ -13,7 +13,7 @@ import logging
 import matplotlib as mpl            # both of these lines must be before importing matplotlib.pyplot
 mpl.use('Agg')                      # crontab won't work without this
 import matplotlib.pyplot as plt
-#import seaborn as sns
+# import seaborn as sns
 from weightfunctions import read_scale, write_file, get_weather, IFTTTmsg, calculate, check_web_response
 from matplotlib.dates import DateFormatter      # , YEARLY, rrulewrapper, RRuleLocator, drange)
 import matplotlib.dates as dates
@@ -50,13 +50,13 @@ try:
 
     print("Plot current data")
     # logger.info("Read CSV")
-    with open(INPUTFILEPATH_TODAY,'r') as inputfile:
+    with open(INPUTFILEPATH_TODAY, 'r') as inputfile:
         # print(inputfile)
         filecontents = pd.read_csv(inputfile, delimiter=',', parse_dates=True, dayfirst=False)      # nrows=5
 
     # print(filecontents.columns)
     # print(filecontents.info())
-    TODAY_FILENAME = "/home/pi/Documents/Code/Graphs/" + str(filedate) + "_Today.jpeg"    # try jpeg first then png
+    TODAY_FILENAME = "/home/pi/Documents/Code/Graphs/" + str(filedate) + "_Today.jpg"    # try jpeg first then png
     markersize_all = 1.5
     # colors picked from: https://htmlcolorcodes.com/color-picker/
     line1color_blue = "#3c33ff"
@@ -89,7 +89,7 @@ try:
 
     # Plot multi day data
     fivedaydata = pd.DataFrame()
-    FIVEDAY_FILENAME = "/home/pi/Documents/Code/Graphs/" + str(filedate) + "_5Day.jpeg"
+    FIVEDAY_FILENAME = "/home/pi/Documents/Code/Graphs/" + str(filedate) + "_5Day.jpg"
     YESTERDAYa = TODAY[0:6] + str((int(TODAY[6:]) - 1)).zfill(2)
     # print(YESTERDAYa)
     YESTERDAYb = YESTERDAYa[0:6] + str((int(YESTERDAYa[6:]) - 1)).zfill(2)
@@ -104,7 +104,7 @@ try:
 
     for eachday in YESTERDAYS:
         INPUTFILEPATH_5DAY = "/home/pi/Documents/Code/" + str(eachday) + "_WeightLog.csv"
-        with open(INPUTFILEPATH_5DAY,'r') as inputfile:
+        with open(INPUTFILEPATH_5DAY, 'r') as inputfile:
             # print(inputfile)
             filecontents = pd.read_csv(inputfile, delimiter=',', parse_dates=True, dayfirst=False)
             # print(filecontents)
@@ -122,7 +122,7 @@ try:
 
     # Plot DailyStats
     INPUTFILEPATH_DAILYSTATS = "/home/pi/Documents/Code/" + YEAR + "_DailyStats.csv"
-    DAILYSTATS_FILENAME = "/home/pi/Documents/Code/Graphs/" + YEAR + "_DailyStats.jpeg"
+    DAILYSTATS_FILENAME = "/home/pi/Documents/Code/Graphs/" + YEAR + "_DailyStats.jpg"
 
     with open(INPUTFILEPATH_DAILYSTATS, "r") as inputfile:
         # print(inputfile)
@@ -138,18 +138,27 @@ try:
     ax1.xaxis.set_major_formatter(formatter)
     ax1.plot_date(x=datetime_object, y=dailystatsdata['WBigMed-Median'], xdate=True, ydate=False, color=line1color_blue, marker="o", markersize=markersize_all)
     ax1.plot_date(x=datetime_object, y=dailystatsdata['WBigMed-Q1'], xdate=True, ydate=False, color=line1color_blue, marker="v", markersize=markersize_all)
-    ax1.plot_date(x=datetime_object, y=dailystatsdata['WBigMed-Q4'], xdate=True, ydate=False, color=line1color_blue, marker="^", markersize=markersize_all)
+    ax1.plot_date(x=datetime_object, y=dailystatsdata['WBigMed-Q3'], xdate=True, ydate=False, color=line1color_blue, marker="^", markersize=markersize_all)
     ax1.plot_date(x=datetime_object, y=dailystatsdata['WBigMed-Min'], xdate=True, ydate=False, color=line1color_blue, marker="_", markersize=markersize_all)
     # ax1.plot_date(x=datetime_object, y=dailystatsdata['WBigMed-Max'], xdate=True, ydate=False, color=line1color_blue, marker="_", markersize=markersize_all)
     ax2 = ax1.twinx()
     ax2.plot_date(x=datetime_object, y=dailystatsdata['WSmlMed-Median'], xdate=True, ydate=False, color=line2color_red, marker="o", markersize=markersize_all)
     ax2.plot_date(x=datetime_object, y=dailystatsdata['WSmlMed-Q1'], xdate=True, ydate=False, color=line2color_red, marker="v", markersize=markersize_all)
-    ax2.plot_date(x=datetime_object, y=dailystatsdata['WSmlMed-Q4'], xdate=True, ydate=False, color=line2color_red, marker="^", markersize=markersize_all)
+    ax2.plot_date(x=datetime_object, y=dailystatsdata['WSmlMed-Q3'], xdate=True, ydate=False, color=line2color_red, marker="^", markersize=markersize_all)
     ax2.plot_date(x=datetime_object, y=dailystatsdata['WSmlMed-Min'], xdate=True, ydate=False, color=line2color_red, marker="_", markersize=markersize_all)
     # ax2.plot_date(x=datetime_object, y=dailystatsdata['WSmlMed-Max'], xdate=True, ydate=False, color=line2color_red, marker="_", markersize=markersize_all)
     ax2.set_ylabel('Median Weight Small (lbs)', color=line2color_red)
     ax2.tick_params('y', colors=line2color_red)
     plt.savefig(DAILYSTATS_FILENAME, dpi=300)
+    # plt.show()
+
+    with open(INPUTFILEPATH_TODAY, 'r') as inputfile:
+        # print(inputfile)
+        filecontents = pd.read_csv(inputfile, delimiter=',', index_col='DateTime', parse_dates=True, dayfirst=False)      # nrows=5
+
+    column_list = ["WBigMed", "WSmlMed", "BigTemp", "WTemp"]
+    filecontents[column_list].plot(legend=True)
+    plt.savefig("/home/pi/Documents/Code/test.jpg", dpi=300)
     # plt.show()
 
     # print("Success!")
