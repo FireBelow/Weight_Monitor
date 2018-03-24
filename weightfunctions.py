@@ -449,8 +449,8 @@ def calculate():
         # write_file(outputfilepath_Daily, 'a', headers)       #useful for testing header changes
         write_file(outputfilepath_Daily, 'a', datatosave)
 
-        filecontents.iloc[1:].to_csv(outputfilepath_Yearly_csv, mode='a', index=False, sep=",")
-        filecontents.iloc[1:].to_excel(outputfilepath_Yearly_xlsx, mode='a', index=False)
+        filecontents.to_csv(outputfilepath_Yearly_csv, mode='a', header=False, index=False, sep=",")
+        filecontents.to_excel(outputfilepath_Yearly_xlsx, header=False, index=False)
 
     except:
         IFTTTmsg("Calculate Exception")
