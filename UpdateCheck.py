@@ -11,9 +11,6 @@ import logging
 from weightfunctions import read_scale, write_file, get_weather, IFTTTmsg, calculate, check_web_response
 
 # TODO:
-# Update UpdateCheck with datetime calcs instead of string parsing
-# update_timedelta = CurrentTime - lastdatetime
-# print(update_timedelta)
 
 try:
     logger = logging.getLogger("WeightMonitor.UpdateCheck.add")
@@ -26,8 +23,6 @@ try:
         open(INPUTFILENAME, 'r')
         print("File exists")
     except:
-        # TODAY = time.strftime("%Y%m%d")
-        # OUTPUTFILE = "/home/pi/Documents/Code/" + str(TODAY) + "_WeightLog.csv"
         print("File does not exist")
         IFTTTmsg("NO LOG FILE FOR TODAY")
     with open(INPUTFILENAME, 'r') as file:       # recommended way to open files to ensure the file closes properly
