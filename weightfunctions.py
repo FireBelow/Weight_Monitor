@@ -139,7 +139,7 @@ def get_weather():
                 main = weather_data_open["weather"][0]["main"]
                 # print(main)
                 weather_output = weather_output + main + ","
-                description = weather_data_open["weather"][0]["description"].replace(" ","_")
+                description = weather_data_open["weather"][0]["description"].replace(" ", "_")
                 # print(description)
                 weather_output = weather_output + description + ","
                 temp = weather_data_open["main"]["temp"]
@@ -158,7 +158,7 @@ def get_weather():
                 # print(WindDeg)
                 weather_output = weather_output + str(WindDeg) + ","
                 if "rain" in weather_data_open:
-                    write_file("/home/pi/Documents/Code/000RAIN.txt",'w',str(weather_data_open))
+                    write_file("/home/pi/Documents/Code/000RAIN.txt", 'w', str(weather_data_open))
                     print(weather_data_open["rain"].keys())
                     rain = weather_data_open["rain"]["3h"]
                     # print(rain)
@@ -168,7 +168,7 @@ def get_weather():
                     rain = ""
                     weather_output = weather_output + str(rain) + ","
                 if "snow" in weather_data_open:
-                    write_file("/home/pi/Documents/Code/000SNOW.txt",'w',str(weather_data_open))
+                    write_file("/home/pi/Documents/Code/000SNOW.txt", 'w', str(weather_data_open))
                     print(weather_data_open["snow"].keys())
                     snow = weather_data_open["snow"]["3h"]
                     # print(snow)

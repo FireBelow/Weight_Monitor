@@ -42,6 +42,7 @@ try:
     TODAY = time.strftime("%Y%m%d")
     OUTPUTFILE = "/home/pi/Documents/Code/" + str(TODAY) + "_WeightLog.csv"
     # print(OUTPUTFILE)
+    Notes = ""
     jsonfilename = "/home/pi/Documents/Code/private.json"
     with open(jsonfilename) as jsonfile:
         jsondata = json.load(jsonfile)          # read json
@@ -109,7 +110,8 @@ try:
                     BIGtemphum1 = BIGtemphum
             else:
                 print("Better reading recorded after " + str(i) + " tries")
-                logger.info("Big DHT Retries: " + str(i))
+                logger.info("BigDHT Retries: " + str(i))
+                Notes = Notes + "BigDHT Retries: " + str(i)
                 break
         if i >= RETRY_ATTEMPTS:
             logger.info(str(i) + " retries for BigDHT & stdevs(T&H): " + str(round(np.std(BIGtemperature), 2)) + " " + str(round(np.std(BIGhumidity), 2)))
@@ -179,7 +181,8 @@ try:
                     BIGdata_raw = BIGdata_raw1
             else:
                 print("Better reading recorded after " + str(i) + " tries")
-                logger.info("Big HX Retries: " + str(i))
+                logger.info("BigHX Retries: " + str(i))
+                Notes = Notes + "BigHX Retries: " + str(i)
                 break
         if i >= RETRY_ATTEMPTS + 2:
             logger.info(str(i) + " retries for BigHX & stdev: "
@@ -216,6 +219,7 @@ try:
             else:
                 print("Better reading recorded after " + str(i) + " tries")
                 logger.info("Sml HX Retries: " + str(i))
+                Notes = Notes + "SmlHX Retries: " + str(i)
                 break
         if i >= RETRY_ATTEMPTS:
             logger.info(str(i) + " retries for SmlHX & stdev: " + str(round(np.std(SMLdata_raw), 2)))
@@ -243,7 +247,8 @@ try:
         + str(np.median(BIGdata_raw))+COMMA                     \
         + str(round(np.std(BIGdata_raw), 1))+COMMA              \
         + str(np.median(SMLdata_raw))+COMMA                     \
-        + str(round(np.std(SMLdata_raw), 1))+"\n"        # add rawread
+        + str(round(np.std(SMLdata_raw), 1)) + COMMA            \
+        + Notes + "\n"
 
     # write_file(OUTPUTFILE, 'a', Headers)       #to update headers in the middle of the file
     write_file(OUTPUTFILE, 'a', AllData)
