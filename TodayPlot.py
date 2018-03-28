@@ -191,11 +191,16 @@ try:
 
     filecontents.index = pd.to_datetime(filecontents.index, format="%Y-%m-%d-%H-%M-%S")
     # print(filecontents.info())
-    column_list = ["WBigMed", "WSmlMed", "BigTemp", "WTemp"]
+    column_list_left = ["WBigMed", "WSmlMed"]
+    column_list_right = ["BigTemp", "WTemp"]
     # print(filecontents.index)
     # print(filecontents.DateTime)
     # print(filecontents.keys())
-    filecontents[column_list].plot(legend=True, style=".")
+    ax1 = filecontents[column_list_left].plot(legend=True, style=".", figsize=(5, 5), title="Test Plot")
+    filecontents[column_list_right].plot(legend=True, style=".", figsize=(5, 5), title="Test Plot", ax=ax1, secondary_y=True)
+    ax1.set_xlabel('Day-Hour')
+    ax1.set_ylabel('Weight (lbs)', color=linecolor_blue)
+    ax1.tick_params('y', colors=linecolor_blue)
     plt.savefig("/home/pi/Documents/Code/test.jpg", dpi=300)
     # plt.show()
 
