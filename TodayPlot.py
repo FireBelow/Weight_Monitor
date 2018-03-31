@@ -18,6 +18,16 @@ from weightfunctions import read_scale, write_file, get_weather, IFTTTmsg, calcu
 from matplotlib.dates import DateFormatter      # , YEARLY, rrulewrapper, RRuleLocator, drange)
 import matplotlib.dates as dates
 
+# TODO
+# Sunrise/sunset delta trigger
+# Types of plots to add
+# Nectar start/end
+# Day of 1/2 nectar flow
+# Daily weight by year (stacked by adding 100lbs)
+# Water Tower buckets per day
+# Make functions to read each file type correctly (Read Daily Log and set WMain to category)
+# Plot each day curve on one graph to see daily differences, see also andrews_curves
+
 try:
     # Plot scatter with filecontents.index as X values
     # use_index=True
@@ -186,7 +196,7 @@ try:
 
     with open(INPUTFILEPATH_TODAY, 'r') as inputfile:
         # print(inputfile)
-        filecontents = pd.read_csv(inputfile, delimiter=',', index_col='DateTime')#, parse_dates=[0], infer_datetime_format=True)      # nrows=5, index_col='DateTime'
+        filecontents = pd.read_csv(inputfile, delimiter=',', index_col='DateTime')  # , parse_dates=[0], infer_datetime_format=True)      # nrows=5, index_col='DateTime'
     # print(filecontents.info())
 
     filecontents.index = pd.to_datetime(filecontents.index, format="%Y-%m-%d-%H-%M-%S")
@@ -196,11 +206,19 @@ try:
     # print(filecontents.index)
     # print(filecontents.DateTime)
     # print(filecontents.keys())
-    ax1 = filecontents[column_list_left].plot(legend=True, style=".", figsize=(5, 5), title="Test Plot")
-    filecontents[column_list_right].plot(legend=True, style=".", figsize=(5, 5), title="Test Plot", ax=ax1, secondary_y=True)
+    ax1 = filecontents[column_list_left].plot(figsize=(5, 5), title="Today Plot", style=".", color=[linecolor_blue, linecolor_green], legend=False, markersize=markersize_all)
+    # ax2 = ax1.twinx()
+    ax2 = filecontents[column_list_right].plot(ax=ax1, secondary_y=True, style=".", color=[linecolor_red, linecolor_orange], legend=False, markersize=markersize_all)
     ax1.set_xlabel('Day-Hour')
     ax1.set_ylabel('Weight (lbs)', color=linecolor_blue)
     ax1.tick_params('y', colors=linecolor_blue)
+    ax2.set_ylabel('Temps (F)', color=linecolor_red)
+    ax2.tick_params('y', colors=linecolor_red)
+    h1, l1 = ax1.get_legend_handles_labels()
+    h2, l2 = ax2.get_legend_handles_labels()
+    plt.legend(h1+h2, l1+l2, loc=2, fontsize=7)
+    # formatter = DateFormatter("%H-%M")
+    # ax1.xaxis.set_major_formatter(formatter)
     plt.savefig("/home/pi/Documents/Code/test.jpg", dpi=300)
     # plt.show()
 
