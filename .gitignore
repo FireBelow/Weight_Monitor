@@ -11,6 +11,7 @@ Old/
 
 #Ignore Data Collected
 *.csv
+*.xlsx
 *.jpeg
 *.png
 *.jpg
