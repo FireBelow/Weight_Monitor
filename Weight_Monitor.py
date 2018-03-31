@@ -2,7 +2,7 @@
 
 # Weight_Monitor.py
 
-# import pandas as pd
+import pandas as pd
 import numpy as np
 import RPi.GPIO as GPIO
 # import subprocess
@@ -40,6 +40,8 @@ try:
     # end = time.time() - start
 
     TODAY = time.strftime("%Y%m%d")
+    YESTERDAY = TODAY[0:6] + str((int(TODAY[6:]) - 1)).zfill(2)
+    YEAR = YESTERDAY[0:4]
     OUTPUTFILE = "/home/pi/Documents/Code/" + str(TODAY) + "_WeightLog.csv"
     # print(OUTPUTFILE)
     Notes = ""
@@ -235,19 +237,72 @@ try:
     SMLdata = SMLdata + SMLoffset
     # print(round(np.median(SMLdata), 2))
 
+    BigMedian = round(np.median(BIGdata), 2)
+    SmlMedian = round(np.median(SMLdata), 2)
+    BigTempMedian = round(np.median(BIGtemperature), 2)
+    BigHumMedian = round(np.median(BIGhumidity), 2)
+    SmlTempMedian = round(np.median(SMLtemperature), 2)
+    SmlHumMedian = round(np.median(SMLhumidity), 2)
+    # Weather Data
+    BigRaw = np.median(BIGdata_raw)
+    BigRawStdev = round(np.std(BIGdata_raw), 1)
+    SmlRaw = np.median(SMLdata_raw)
+    SmlRawStdev = round(np.std(SMLdata_raw), 1)
+    # Notes
+
+    def find_outliers(DailyLogFile):
+        """This function determines if the current reading is
+        an outlier (i.e. outside Q1 and Q3 bounds)"""
+        low_datapoint_threshold = 20
+        with open(DailyLogFile, "r") as inputfile:
+            # print(inputfile)
+            filecontents = pd.read_csv(inputfile, delimiter=',', index_col="DateTime")
+        # print(filecontents.info())
+        n = filecontents["WBigMed"].count()
+        if n <= low_datapoint_threshold:
+            logger.info("Using yesterday log due to n(" + str(n) + ")<=" + str(low_datapoint_threshold))
+            DailyLogFile = "/home/pi/Documents/Code/" + str(YESTERDAY) + "_WeightLog.csv"
+            with open(DailyLogFile, "r") as inputfile:
+                # print(inputfile)
+                filecontents = pd.read_csv(inputfile, delimiter=',', index_col="DateTime")
+
+        Q1 = round(filecontents["WBigMed"].quantile(.25), 2)
+        Q3 = round(filecontents["WBigMed"].quantile(.75), 2)
+        low_outlier_threshold = Q1-(1.5*(Q3-Q1))
+        high_outlier_threshold = Q3+(1.5*(Q3-Q1))
+        # print(round(low_outlier_threshold, 2), round(high_outlier_threshold, 2))
+
+        return (round(low_outlier_threshold, 2), round(high_outlier_threshold, 2), n)
+
+    DAILY_LOG_TODAY = "/home/pi/Documents/Code/" + str(TODAY) + "_WeightLog.csv"
+    low_outlier_threshold, high_outlier_threshold, n = find_outliers(DAILY_LOG_TODAY)
+    print(low_outlier_threshold, high_outlier_threshold)
+    if BigMedian <= low_outlier_threshold:
+        problem_msg = "BigMedian Outlier Reading " + str(BigMedian) + "<" + str(low_outlier_threshold) + ", " + str(n)
+        logger.info(problem_msg)
+        IFTTTmsg(problem_msg)
+        # BigMedian = np.nan
+    elif BigMedian >= high_outlier_threshold:
+        problem_msg = "BigMedian Outlier Reading " + str(BigMedian) + ">" + str(high_outlier_threshold) + ", " + str(n)
+        logger.info(problem_msg)
+        IFTTTmsg(problem_msg)
+        # BigMedian = np.nan
+    else:
+        print("BigMedian Reading within IQR")
+
     COMMA = ','
-    AllData = time.strftime("%Y-%m-%d-%H-%M-%S")+COMMA          \
-        + str(round(np.median(BIGdata), 2))+COMMA               \
-        + str(round(np.median(SMLdata), 2))+COMMA               \
-        + str(round(np.median(BIGtemperature), 2))+COMMA        \
-        + str(round(np.median(BIGhumidity), 2))+COMMA           \
-        + str(round(np.median(SMLtemperature), 2))+COMMA        \
-        + str(round(np.median(SMLhumidity), 2))+COMMA           \
-        + str(WeatherData)+COMMA                                \
-        + str(np.median(BIGdata_raw))+COMMA                     \
-        + str(round(np.std(BIGdata_raw), 1))+COMMA              \
-        + str(np.median(SMLdata_raw))+COMMA                     \
-        + str(round(np.std(SMLdata_raw), 1)) + COMMA            \
+    AllData = time.strftime("%Y-%m-%d-%H-%M-%S") + COMMA        \
+        + str(BigMedian) + COMMA                                \
+        + str(SmlMedian) + COMMA                                \
+        + str(BigTempMedian) + COMMA                            \
+        + str(BigHumMedian) + COMMA                             \
+        + str(SmlTempMedian) + COMMA                            \
+        + str(SmlHumMedian) + COMMA                             \
+        + str(WeatherData) + COMMA                              \
+        + str(BigRaw) + COMMA                                   \
+        + str(BigRawStdev) + COMMA                              \
+        + str(SmlRaw) + COMMA                                   \
+        + str(SmlRawStdev) + COMMA                              \
         + Notes + "\n"
 
     # write_file(OUTPUTFILE, 'a', Headers)       #to update headers in the middle of the file
