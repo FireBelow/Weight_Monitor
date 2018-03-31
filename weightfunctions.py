@@ -114,6 +114,7 @@ def get_weather():
             # print(WeatherKeyWUnder)
 
         print("Get OpenWeather")
+        logger.info("Get OpenWeather")
         weather_URL_open = "http://api.openweathermap.org/data/2.5/weather?zip=" + Zip_Code + "&appid=" + WeatherKeyWOpen + "&units=imperial"
         # print(weather_URL_open)
         weather_data_open = {}
@@ -132,7 +133,7 @@ def get_weather():
             # print(weather_data_open["weather"][0].keys())
 
             if weather_data_open:
-                print("WeatherOpen data exists")
+                # print("WeatherOpen data exists")
                 # cod_response = weather_data_open["cod"]
                 # print(cod_response)
                 weather_output = ""
@@ -195,19 +196,20 @@ def get_weather():
                 break
 
         print("Get UnderWeather")
+        logger.info("Get UnderWeather")
         weather_URL_under = "http://api.wunderground.com/api/" + WeatherKeyWUnder + "/conditions/q/pws:KDCWASHI163.json"
         # print(weather_URL_under)
         weather_data_under = {}
         for i in range(3):
             WeatherStringUnder=requests.get(weather_URL_under, timeout=15)
             # print(CurrentWeatherString.json())
-            print("Parse UnderWeather")
+            # print("Parse UnderWeather")
             weather_data_under = json.loads(WeatherStringUnder.text)
             # print(weather_data)
             # print(weather_data["current_observation"].keys())
 
             if weather_data_under:
-                print("WeatherUnder data exists")
+                # print("WeatherUnder data exists")
                 solarradiation = weather_data_under["current_observation"]["solarradiation"]
                 # print(solarradiation)
                 weather_output = weather_output + str(solarradiation) + ","
@@ -321,19 +323,6 @@ def calculate():
         datatosave = ""
         headers = ""
         observationthreshold = (12 * 24) * 0.9  # 90% of observation every 5 min each hour times 24 hrs
-
-        def clean_daily_log(DailyLogFile):
-            with open(DailyLogFile, "r") as inputfile:
-                # print(inputfile)
-                filecontents = pd.read_csv(inputfile, delimiter=',', index_col="DateTime", parse_dates=True, dayfirst=False)
-            print(filecontents.info())
-            Q1 = round(filecontents[column].quantile(.25), 2)
-            Q3 = round(filecontents[column].quantile(.75), 2)
-            low_outlier_threshold = Q1-(1.5*(Q3-Q1))
-            high_outlier_threshold = Q3+(1.5*(Q3-Q1))
-            print(low_outlier_threshold, high_outlier_threshold)
-            print(filecontents["WBigMed" > high_outlier_threshold])
-            print(filecontents["WBigMed" < low_outlier_threshold])
 
         print("Calculate Stats on Daily Readings")
         logger.info("Read CSV")

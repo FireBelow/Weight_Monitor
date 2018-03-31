@@ -11,6 +11,7 @@ import logging
 from weightfunctions import read_scale, write_file, get_weather, IFTTTmsg, calculate, check_web_response
 
 # TODO:
+# UpdateCheck should also check Running Log
 
 try:
     logger = logging.getLogger("WeightMonitor.UpdateCheck.add")
