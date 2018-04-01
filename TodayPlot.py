@@ -222,6 +222,35 @@ try:
     plt.savefig("/home/pi/Documents/Code/test.jpg", dpi=300)
     # plt.show()
 
+    INPUTFILEPATH_WEIGHTLOG = "/home/pi/Documents/Code/" + str(YEAR) + "_WeightLog.csv"
+    with open(INPUTFILEPATH_WEIGHTLOG, 'r') as inputfile:
+        # print(inputfile)
+        filecontents = pd.read_csv(inputfile, delimiter=',', index_col='DateTime')  # , parse_dates=[0], infer_datetime_format=True)      # nrows=5, index_col='DateTime'
+    # print(filecontents.info())
+
+    filecontents.index = pd.to_datetime(filecontents.index, format="%Y-%m-%d-%H-%M-%S")
+    # print(filecontents.info())
+    column_list_left = ["WBigMed", "WSmlMed"]
+    column_list_right = ["BigTemp", "WTemp"]
+    # print(filecontents.index)
+    # print(filecontents.DateTime)
+    # print(filecontents.keys())
+    ax1 = filecontents[column_list_left].plot(figsize=(5, 5), title="Today Plot", style=".", color=[linecolor_blue, linecolor_green], legend=False, markersize=markersize_all)
+    # ax2 = ax1.twinx()
+    ax2 = filecontents[column_list_right].plot(ax=ax1, secondary_y=True, style=".", color=[linecolor_red, linecolor_orange], legend=False, markersize=markersize_all)
+    ax1.set_xlabel('Day-Hour')
+    ax1.set_ylabel('Weight (lbs)', color=linecolor_blue)
+    ax1.tick_params('y', colors=linecolor_blue)
+    ax2.set_ylabel('Temps (F)', color=linecolor_red)
+    ax2.tick_params('y', colors=linecolor_red)
+    h1, l1 = ax1.get_legend_handles_labels()
+    h2, l2 = ax2.get_legend_handles_labels()
+    plt.legend(h1+h2, l1+l2, loc=2, fontsize=7)
+    # formatter = DateFormatter("%H-%M")
+    # ax1.xaxis.set_major_formatter(formatter)
+    plt.savefig("/home/pi/Documents/Code/test_all.jpg", dpi=300)
+    # plt.show()
+
     # print("Success!")
     # IFTTTmsg('TodayPlot Success!')
 
