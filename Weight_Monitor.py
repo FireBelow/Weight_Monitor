@@ -6,7 +6,7 @@ import pandas as pd
 import numpy as np
 import RPi.GPIO as GPIO
 # import subprocess
-# import datetime
+import datetime
 import time
 import Adafruit_DHT
 # import os.path
@@ -39,10 +39,16 @@ try:
     # start = time.time()
     # end = time.time() - start
 
-    TODAY = time.strftime("%Y%m%d")
-    YESTERDAY = TODAY[0:6] + str((int(TODAY[6:]) - 1)).zfill(2)
-    YEAR = YESTERDAY[0:4]
-    OUTPUTFILE = "/home/pi/Documents/Code/" + str(TODAY) + "_WeightLog.csv"
+    
+    MINUS_ONE_DAY = datetime.timedelta(days=1)
+    TODAY = datetime.datetime.now().date()
+    print(TODAY, type(TODAY))
+    YESTERDAY = TODAY - MINUS_ONE_DAY
+    # print(YESTERDAY, type(YESTERDAY))
+    YEAR = TODAY.year
+    # print(YEAR, type(YEAR))
+
+    OUTPUTFILE = "/home/pi/Documents/Code/" + TODAY.strftime("%Y%m%d") + "_WeightLog.csv"
     # print(OUTPUTFILE)
     Notes = ""
     jsonfilename = "/home/pi/Documents/Code/private.json"
@@ -261,7 +267,7 @@ try:
         n = filecontents["WBigMed"].count()
         if n <= low_datapoint_threshold:
             logger.info("Using yesterday log due to n(" + str(n) + ")<=" + str(low_datapoint_threshold))
-            DailyLogFile = "/home/pi/Documents/Code/" + str(YESTERDAY) + "_WeightLog.csv"
+            DailyLogFile = "/home/pi/Documents/Code/" + YESTERDAY.strftime("%Y%m%d") + "_WeightLog.csv"
             with open(DailyLogFile, "r") as inputfile:
                 # print(inputfile)
                 filecontents = pd.read_csv(inputfile, delimiter=',', index_col="DateTime")
@@ -274,7 +280,7 @@ try:
 
         return (round(low_outlier_threshold, 2), round(high_outlier_threshold, 2), n)
 
-    DAILY_LOG_TODAY = "/home/pi/Documents/Code/" + str(TODAY) + "_WeightLog.csv"
+    DAILY_LOG_TODAY = "/home/pi/Documents/Code/" + TODAY.strftime("%Y%m%d") + "_WeightLog.csv"
     low_outlier_threshold, high_outlier_threshold, n = find_outliers(DAILY_LOG_TODAY)
     print(low_outlier_threshold, high_outlier_threshold)
     if BigMedian <= low_outlier_threshold:
