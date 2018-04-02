@@ -315,7 +315,7 @@ def calculate():
         YEAR = YESTERDAY[0:4]
         # print(YESTERDAY)
         inputfilepath = "/home/pi/Documents/Code/" + YESTERDAY + "_WeightLog.csv"
-        # inputfilepath = "/home/pi/Documents/Code/20180314_WeightLog.csv"
+        # inputfilepath = "/home/pi/Documents/Code/Daily/20180226_WeightLog.csv"
         outputfilepath_Daily = "/home/pi/Documents/Code/" + YEAR + "_DailyStats.csv"
         outputfilepath_Yearly_csv = "/home/pi/Documents/Code/" + YEAR + "_WeightLog.csv"
         outputfilepath_Yearly_xlsx = "/home/pi/Documents/Code/" + YEAR + "_WeightLog.xlsx"
@@ -439,7 +439,8 @@ def calculate():
         write_file(outputfilepath_Daily, 'a', datatosave)
 
         filecontents.to_csv(outputfilepath_Yearly_csv, mode='a', header=False, index=False, sep=",")
-        filecontents.to_excel(outputfilepath_Yearly_xlsx, header=False, index=False)
+        excel_writer = pd.ExcelWriter(outputfilepath_Yearly_xlsx)
+        filecontents.to_excel(excel_writer, header=False, index=False)
 
     except:
         IFTTTmsg("Calculate Exception")
