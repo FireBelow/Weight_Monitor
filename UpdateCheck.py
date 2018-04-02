@@ -30,28 +30,34 @@ try:
         filecontents = pn.read_csv(INPUTFILENAME, delimiter=',')     # nrows=5
     # print(filecontents)
 
-#    add print(filecontents.value_count())
+    # add print(filecontents.value_count())
 
-    lastdatetime = filecontents["DateTime"].iloc[-1]
-    # print(lastdatetime, type(lastdatetime))
+    if filecontents["DateTime"].count() > 0:
+        lastdatetime = filecontents["DateTime"].iloc[-1]
+        # print(lastdatetime, type(lastdatetime))
 
-    lastdatetime = datetime.datetime.strptime(lastdatetime, "%Y-%m-%d-%H-%M-%S")
-    # print(lastdatetime, type(lastdatetime))
-    CurrentTime = time.strftime("%Y-%m-%d-%H-%M-%S")
-    # print(CurrentTime, type(CurrentTime))
-    CurrentTime = datetime.datetime.strptime(CurrentTime, "%Y-%m-%d-%H-%M-%S")
-    # print(CurrentTime, type(CurrentTime))
-    current_update_time_delta = CurrentTime - lastdatetime
-    # print(current_update_time_delta, type(current_update_time_delta))
-    update_time_delta_threshold = datetime.timedelta(minutes=UPDATETHRESHOLD)
-    # print(update_time_delta_threshold, type(update_time_delta_threshold))
-    if current_update_time_delta < update_time_delta_threshold:
-        problem_msg = str(current_update_time_delta) + " min since last reading"
-        print(problem_msg)
-        # IFTTTmsg(problem_msg)
-        # logger.info(problem_msg)
+        lastdatetime = datetime.datetime.strptime(lastdatetime, "%Y-%m-%d-%H-%M-%S")
+        # print(lastdatetime, type(lastdatetime))
+        CurrentTime = time.strftime("%Y-%m-%d-%H-%M-%S")
+        # print(CurrentTime, type(CurrentTime))
+        CurrentTime = datetime.datetime.strptime(CurrentTime, "%Y-%m-%d-%H-%M-%S")
+        # print(CurrentTime, type(CurrentTime))
+        current_update_time_delta = CurrentTime - lastdatetime
+        # print(current_update_time_delta, type(current_update_time_delta))
+        update_time_delta_threshold = datetime.timedelta(minutes=UPDATETHRESHOLD)
+        # print(update_time_delta_threshold, type(update_time_delta_threshold))
+        if current_update_time_delta < update_time_delta_threshold:
+            problem_msg = str(current_update_time_delta) + " min since last reading"
+            print(problem_msg)
+            # IFTTTmsg(problem_msg)
+            # logger.info(problem_msg)
+        else:
+            problem_msg = "OLD DATA: " + str(current_update_time_delta) + " min since last reading (>20min)"
+            print(problem_msg)
+            IFTTTmsg(problem_msg)
+            logger.info(problem_msg)
     else:
-        problem_msg = "OLD DATA: " + str(current_update_time_delta) + " min since last reading (>20min)"
+        problem_msg = "***EMPTY LOG FILE***"
         print(problem_msg)
         IFTTTmsg(problem_msg)
         logger.info(problem_msg)
