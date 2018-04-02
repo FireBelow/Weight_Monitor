@@ -5,7 +5,7 @@
 import pandas as pd
 # import numpy as np
 # import subprocess
-# import datetime
+import datetime
 import time
 # import os.path
 import logging
@@ -74,10 +74,15 @@ try:
     logger.addHandler(LogHandler)
     logger.info("Program started")
 
-    TODAY = time.strftime("%Y%m%d")
-    YESTERDAY = TODAY[0:6] + str((int(TODAY[6:]) - 1)).zfill(2)
-    YEAR = YESTERDAY[0:4]
-    INPUTFILEPATH_TODAY = "/home/pi/Documents/Code/" + str(TODAY) + "_WeightLog.csv"
+    TODAY = datetime.datetime.now().date()
+    # print(TODAY, type(TODAY))
+    MINUS_ONE_DAY = datetime.timedelta(days=1)
+    YESTERDAY = TODAY - MINUS_ONE_DAY
+    # print(YESTERDAY, type(YESTERDAY))
+    YEAR = TODAY.year
+    # print(YEAR, type(YEAR))
+
+    INPUTFILEPATH_TODAY = "/home/pi/Documents/Code/" + TODAY.strftime("%Y%m%d") + "_WeightLog.csv"
     # INPUTFILEPATH_TODAY = "/home/pi/Documents/Code/20180308_WeightLog.csv"
     COMMA = ","
 
@@ -132,20 +137,22 @@ try:
     # Plot multi day data
     fivedaydata = pd.DataFrame()
     FIVEDAY_FILENAME = "/home/pi/Documents/Code/Graphs/" + str(filedate) + "_5Day.jpg"
-    YESTERDAYa = TODAY[0:6] + str((int(TODAY[6:]) - 1)).zfill(2)
+    YESTERDAYa = YESTERDAY
     # print(YESTERDAYa)
-    YESTERDAYb = YESTERDAYa[0:6] + str((int(YESTERDAYa[6:]) - 1)).zfill(2)
+    YESTERDAYb = YESTERDAYa - MINUS_ONE_DAY
     # print(YESTERDAYb)
-    YESTERDAYc = YESTERDAYb[0:6] + str((int(YESTERDAYb[6:]) - 1)).zfill(2)
+    YESTERDAYc = YESTERDAYb - MINUS_ONE_DAY
     # print(YESTERDAYc)
-    YESTERDAYd = YESTERDAYc[0:6] + str((int(YESTERDAYc[6:]) - 1)).zfill(2)
+    YESTERDAYd = YESTERDAYc - MINUS_ONE_DAY
     # print(YESTERDAYd)
-    YESTERDAYe = YESTERDAYd[0:6] + str((int(YESTERDAYd[6:]) - 1)).zfill(2)
+    YESTERDAYe = YESTERDAYd - MINUS_ONE_DAY
     # print(YESTERDAYe)
     YESTERDAYS = [YESTERDAYe, YESTERDAYd, YESTERDAYc, YESTERDAYb, YESTERDAYa]
+    # print(YESTERDAYS)
 
     for eachday in YESTERDAYS:
-        INPUTFILEPATH_5DAY = "/home/pi/Documents/Code/" + str(eachday) + "_WeightLog.csv"
+        # print(eachday)
+        INPUTFILEPATH_5DAY = "/home/pi/Documents/Code/" + eachday.strftime("%Y%m%d") + "_WeightLog.csv"
         with open(INPUTFILEPATH_5DAY, 'r') as inputfile:
             # print(inputfile)
             filecontents = pd.read_csv(inputfile, delimiter=',', parse_dates=True, dayfirst=False)
@@ -163,15 +170,17 @@ try:
     plt.savefig(FIVEDAY_FILENAME, dpi=300)
 
     # Plot DailyStats
-    INPUTFILEPATH_DAILYSTATS = "/home/pi/Documents/Code/" + YEAR + "_DailyStats.csv"
-    DAILYSTATS_FILENAME = "/home/pi/Documents/Code/Graphs/" + YEAR + "_DailyStats.jpg"
+    INPUTFILEPATH_DAILYSTATS = "/home/pi/Documents/Code/" + str(YEAR) + "_DailyStats.csv"
+    # print(INPUTFILEPATH_DAILYSTATS)
+    DAILYSTATS_FILENAME = "/home/pi/Documents/Code/Graphs/" + str(YEAR) + "_DailyStats.jpg"
+    # print(DAILYSTATS_FILENAME)
 
     with open(INPUTFILEPATH_DAILYSTATS, "r") as inputfile:
         # print(inputfile)
         filecontents = pd.read_csv(inputfile, delimiter=',', parse_dates=True, dayfirst=False)
         # print(filecontents)
-    # print(fivedaydata.info())
-    dailystatsdata = filecontents.tail()
+    dailystatsdata = filecontents   # .tail()
+    # print(dailystatsdata.info())
     datetime_object = pd.to_datetime(dailystatsdata['DateTime'], format="%Y-%m-%d")
     fig, ax1 = plt.subplots()
     ax1.set_xlabel('Day')
@@ -182,13 +191,13 @@ try:
     ax1.plot_date(x=datetime_object, y=dailystatsdata['WBigMed-Q1'], xdate=True, ydate=False, color=linecolor_blue, marker="v", markersize=markersize_all)
     ax1.plot_date(x=datetime_object, y=dailystatsdata['WBigMed-Q3'], xdate=True, ydate=False, color=linecolor_blue, marker="^", markersize=markersize_all)
     ax1.plot_date(x=datetime_object, y=dailystatsdata['WBigMed-Min'], xdate=True, ydate=False, color=linecolor_blue, marker="_", markersize=markersize_all)
-    # ax1.plot_date(x=datetime_object, y=dailystatsdata['WBigMed-Max'], xdate=True, ydate=False, color=linecolor_blue, marker="_", markersize=markersize_all)
+    ax1.plot_date(x=datetime_object, y=dailystatsdata['WBigMed-Max'], xdate=True, ydate=False, color=linecolor_blue, marker="_", markersize=markersize_all)
     ax2 = ax1.twinx()
     ax2.plot_date(x=datetime_object, y=dailystatsdata['WSmlMed-Median'], xdate=True, ydate=False, color=linecolor_red, marker="o", markersize=markersize_all)
     ax2.plot_date(x=datetime_object, y=dailystatsdata['WSmlMed-Q1'], xdate=True, ydate=False, color=linecolor_red, marker="v", markersize=markersize_all)
     ax2.plot_date(x=datetime_object, y=dailystatsdata['WSmlMed-Q3'], xdate=True, ydate=False, color=linecolor_red, marker="^", markersize=markersize_all)
     ax2.plot_date(x=datetime_object, y=dailystatsdata['WSmlMed-Min'], xdate=True, ydate=False, color=linecolor_red, marker="_", markersize=markersize_all)
-    # ax2.plot_date(x=datetime_object, y=dailystatsdata['WSmlMed-Max'], xdate=True, ydate=False, color=linecolor_red, marker="_", markersize=markersize_all)
+    ax2.plot_date(x=datetime_object, y=dailystatsdata['WSmlMed-Max'], xdate=True, ydate=False, color=linecolor_red, marker="_", markersize=markersize_all)
     ax2.set_ylabel('Median Weight Small (lbs)', color=linecolor_red)
     ax2.tick_params('y', colors=linecolor_red)
     plt.savefig(DAILYSTATS_FILENAME, dpi=300)
@@ -235,7 +244,7 @@ try:
     # print(filecontents.index)
     # print(filecontents.DateTime)
     # print(filecontents.keys())
-    ax1 = filecontents[column_list_left].plot(figsize=(5, 5), title="Today Plot", style=".", color=[linecolor_blue, linecolor_green], legend=False, markersize=markersize_all)
+    ax1 = filecontents[column_list_left].plot(figsize=(5, 5), title="All Data", style=".", color=[linecolor_blue, linecolor_green], legend=False, markersize=markersize_all)
     # ax2 = ax1.twinx()
     ax2 = filecontents[column_list_right].plot(ax=ax1, secondary_y=True, style=".", color=[linecolor_red, linecolor_orange], legend=False, markersize=markersize_all)
     ax1.set_xlabel('Day-Hour')
