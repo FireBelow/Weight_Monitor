@@ -18,8 +18,17 @@ try:
     logger.info("Checking if data is Current and Updating")
 
     UPDATETHRESHOLD = 20
-    TODAY = time.strftime("%Y%m%d")
-    INPUTFILENAME = "/home/pi/Documents/Code/" + str(TODAY) + "_WeightLog.csv"
+    TODAY = datetime.datetime.now().date()
+    # print(TODAY, type(TODAY))
+    MINUS_ONE_DAY = datetime.timedelta(days=1)
+    YESTERDAY = TODAY - MINUS_ONE_DAY
+    # print(YESTERDAY, type(YESTERDAY))
+    YEAR = TODAY.year
+    # print(YEAR, type(YEAR))
+    ISO_DATETIME_FORMAT = "%Y-%m-%d %H:%M:%S"
+    ISO_DATE_FORMAT = "%Y-%m-%d"
+    FILE_DATE_FORMAT = "%Y%m%d"
+    INPUTFILENAME = "/home/pi/Documents/Code/" + TODAY.strftime(FILE_DATE_FORMAT) + "_WeightLog.csv"
     try:
         open(INPUTFILENAME, 'r')
         print("File exists")
@@ -36,11 +45,11 @@ try:
         lastdatetime = filecontents["DateTime"].iloc[-1]
         # print(lastdatetime, type(lastdatetime))
 
-        lastdatetime = datetime.datetime.strptime(lastdatetime, "%Y-%m-%d-%H-%M-%S")
+        lastdatetime = datetime.datetime.strptime(lastdatetime, ISO_DATETIME_FORMAT)
         # print(lastdatetime, type(lastdatetime))
-        CurrentTime = time.strftime("%Y-%m-%d-%H-%M-%S")
+        CurrentTime = time.strftime(ISO_DATETIME_FORMAT)
         # print(CurrentTime, type(CurrentTime))
-        CurrentTime = datetime.datetime.strptime(CurrentTime, "%Y-%m-%d-%H-%M-%S")
+        CurrentTime = datetime.datetime.strptime(CurrentTime, ISO_DATETIME_FORMAT)
         # print(CurrentTime, type(CurrentTime))
         current_update_time_delta = CurrentTime - lastdatetime
         # print(current_update_time_delta, type(current_update_time_delta))
@@ -61,51 +70,6 @@ try:
         print(problem_msg)
         IFTTTmsg(problem_msg)
         logger.info(problem_msg)
-
-    # print(lastdatetime)
-    # lastdatetime_parts = lastdatetime.split('-')
-    # lastdatetime_parts = list(map(int, lastdatetime_parts))
-    # print(lastdatetime_parts)
-
-    # CurrentTime = time.strftime("%Y-%m-%d-%H-%M-%S")
-    # CurrentTime_parts = CurrentTime.split('-')
-    # CurrentTime_parts = list(map(int, CurrentTime_parts))
-    # print(CurrentTime_parts)
-
-    # if lastdatetime_parts[0] == CurrentTime_parts[0]:
-    #     print("Year Ok")
-    #     if lastdatetime_parts[1] == CurrentTime_parts[1]:
-    #         print("Month Ok")
-    #         if lastdatetime_parts[2] == CurrentTime_parts[2]:
-    #             print("Day Ok")
-    #             if lastdatetime_parts[3] == CurrentTime_parts[3]:
-    #                 print("Hour Ok")
-    #                 if lastdatetime_parts[4] == CurrentTime_parts[4]:
-    #                     print("Minute Ok")
-    #                 else:
-    #                     if (CurrentTime_parts[4] - lastdatetime_parts[4]) > UPDATETHRESHOLD:
-    #                         print("Minute BAD")
-    #                         IFTTTproblem = "WeightLog: Last reading +" + str(UPDATETHRESHOLD) + " min old"
-    #                         IFTTTmsg(IFTTTproblem)
-    #                         logger.info(IFTTTproblem)
-    #                     else:
-    #                         print("Acceptable Old Reading (<" + str(UPDATETHRESHOLD) + "min)")
-    #             else:
-    #                 if (CurrentTime_parts[3] - lastdatetime_parts[3]) > 1:
-    #                     print("Hour BAD")
-    #                     IFTTTproblem = "WeightLog: Last reading over an HOUR old"
-    #                     IFTTTmsg(IFTTTproblem)
-    #                     logger.info(IFTTTproblem)
-    #                 else:
-    #                     print("Acceptable Hour Old Reading???")
-    #                     logger.info("Acceptable Hour Old Reading???")
-    #         else:
-    #             print("Day BAD")
-    #             logger.info("Is the log over a day old?!!!!")
-    #     else:
-    #         print("Month BAD")
-    # else:
-    #     print("Year BAD")
 
     # IFTTTmsg("Log Updating Correctly")
 
