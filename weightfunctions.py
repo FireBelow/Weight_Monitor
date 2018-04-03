@@ -309,16 +309,22 @@ def calculate():
         logger.addHandler(LogHandler)
         logger.info("Program started")
 
-        TODAY = time.strftime("%Y%m%d")
-        # print(TODAY)
-        YESTERDAY = TODAY[0:6] + str((int(TODAY[6:]) - 1)).zfill(2)
-        YEAR = YESTERDAY[0:4]
-        # print(YESTERDAY)
-        inputfilepath = "/home/pi/Documents/Code/" + YESTERDAY + "_WeightLog.csv"
-        # inputfilepath = "/home/pi/Documents/Code/Daily/20180226_WeightLog.csv"
-        outputfilepath_Daily = "/home/pi/Documents/Code/" + YEAR + "_DailyStats.csv"
-        outputfilepath_Yearly_csv = "/home/pi/Documents/Code/" + YEAR + "_WeightLog.csv"
-        outputfilepath_Yearly_xlsx = "/home/pi/Documents/Code/" + YEAR + "_WeightLog.xlsx"
+        TODAY = datetime.datetime.now().date()
+        # print(TODAY, type(TODAY))
+        MINUS_ONE_DAY = datetime.timedelta(days=1)
+        YESTERDAY = TODAY - MINUS_ONE_DAY
+        # print(YESTERDAY, type(YESTERDAY))
+        YEAR = TODAY.year
+        # print(YEAR, type(YEAR))
+        ISO_DATETIME_FORMAT = "%Y-%m-%d %H:%M:%S"
+        ISO_DATE_FORMAT = "%Y-%m-%d"
+        FILE_DATE_FORMAT = "%Y%m%d"
+
+        inputfilepath = "/home/pi/Documents/Code/" + YESTERDAY.strftime(FILE_DATE_FORMAT) + "_WeightLog.csv"
+        # inputfilepath = "/home/pi/Documents/Code/20180331_WeightLog.csv"
+        outputfilepath_Daily = "/home/pi/Documents/Code/" + str(YEAR) + "_DailyStats.csv"
+        outputfilepath_Yearly_csv = "/home/pi/Documents/Code/" + str(YEAR) + "_WeightLog.csv"
+        outputfilepath_Yearly_xlsx = "/home/pi/Documents/Code/" + str(YEAR) + "_WeightLog.xlsx"
         COMMA = ","
         datatosave = ""
         headers = ""
