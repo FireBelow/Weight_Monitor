@@ -47,8 +47,11 @@ try:
     # print(YESTERDAY, type(YESTERDAY))
     YEAR = TODAY.year
     # print(YEAR, type(YEAR))
+    ISO_DATETIME_FORMAT = "%Y-%m-%d %H:%M:%S"
+    ISO_DATE_FORMAT = "%Y-%m-%d"
+    FILE_DATE_FORMAT = "%Y%m%d"
 
-    OUTPUTFILE = "/home/pi/Documents/Code/" + TODAY.strftime("%Y%m%d") + "_WeightLog.csv"
+    OUTPUTFILE = "/home/pi/Documents/Code/" + TODAY.strftime(FILE_DATE_FORMAT) + "_WeightLog.csv"
     # print(OUTPUTFILE)
     Notes = ""
     jsonfilename = "/home/pi/Documents/Code/private.json"
@@ -267,7 +270,7 @@ try:
         n = filecontents["WBigMed"].count()
         if n <= low_datapoint_threshold:
             logger.info("Using yesterday log due to n(" + str(n) + ")<=" + str(low_datapoint_threshold))
-            DailyLogFile = "/home/pi/Documents/Code/" + YESTERDAY.strftime("%Y%m%d") + "_WeightLog.csv"
+            DailyLogFile = "/home/pi/Documents/Code/" + YESTERDAY.strftime(FILE_DATE_FORMAT) + "_WeightLog.csv"
             with open(DailyLogFile, "r") as inputfile:
                 # print(inputfile)
                 filecontents = pd.read_csv(inputfile, delimiter=',', index_col="DateTime")
@@ -280,7 +283,7 @@ try:
 
         return (round(low_outlier_threshold, 2), round(high_outlier_threshold, 2), n)
 
-    DAILY_LOG_TODAY = "/home/pi/Documents/Code/" + TODAY.strftime("%Y%m%d") + "_WeightLog.csv"
+    DAILY_LOG_TODAY = "/home/pi/Documents/Code/" + TODAY.strftime(FILE_DATE_FORMAT) + "_WeightLog.csv"
     low_outlier_threshold, high_outlier_threshold, n = find_outliers(DAILY_LOG_TODAY)
     print(low_outlier_threshold, high_outlier_threshold)
     if BigMedian <= low_outlier_threshold:
@@ -297,7 +300,7 @@ try:
         print("BigMedian Reading within IQR")
 
     COMMA = ','
-    AllData = time.strftime("%Y-%m-%d-%H-%M-%S") + COMMA        \
+    AllData = time.strftime(ISO_DATETIME_FORMAT) + COMMA        \
         + str(BigMedian) + COMMA                                \
         + str(SmlMedian) + COMMA                                \
         + str(BigTempMedian) + COMMA                            \
