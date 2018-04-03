@@ -81,8 +81,11 @@ try:
     # print(YESTERDAY, type(YESTERDAY))
     YEAR = TODAY.year
     # print(YEAR, type(YEAR))
+    ISO_DATETIME_FORMAT = "%Y-%m-%d %H:%M:%S"
+    ISO_DATE_FORMAT = "%Y-%m-%d"
+    FILE_DATE_FORMAT = "%Y%m%d"
 
-    INPUTFILEPATH_TODAY = "/home/pi/Documents/Code/" + TODAY.strftime("%Y%m%d") + "_WeightLog.csv"
+    INPUTFILEPATH_TODAY = "/home/pi/Documents/Code/" + TODAY.strftime(FILE_DATE_FORMAT) + "_WeightLog.csv"
     # INPUTFILEPATH_TODAY = "/home/pi/Documents/Code/20180308_WeightLog.csv"
     COMMA = ","
 
@@ -112,7 +115,7 @@ try:
     linecolor_green = "#08a806"
     formatter = DateFormatter("%d-%H")
     # print(filecontents['DateTime'])
-    datetime_object = pd.to_datetime(filecontents['DateTime'], format="%Y-%m-%d-%H-%M-%S")
+    datetime_object = pd.to_datetime(filecontents['DateTime'], format=ISO_DATETIME_FORMAT)
     # print(datetime_object)
     logger.info("Plot Data")
     fig, ax1 = plt.subplots()
@@ -152,14 +155,14 @@ try:
 
     for eachday in YESTERDAYS:
         # print(eachday)
-        INPUTFILEPATH_5DAY = "/home/pi/Documents/Code/" + eachday.strftime("%Y%m%d") + "_WeightLog.csv"
+        INPUTFILEPATH_5DAY = "/home/pi/Documents/Code/" + eachday.strftime(FILE_DATE_FORMAT) + "_WeightLog.csv"
         with open(INPUTFILEPATH_5DAY, 'r') as inputfile:
             # print(inputfile)
             filecontents = pd.read_csv(inputfile, delimiter=',', parse_dates=True, dayfirst=False)
             # print(filecontents)
         fivedaydata = fivedaydata.append(filecontents, ignore_index=True)
     # print(fivedaydata.info())
-    datetime_object = pd.to_datetime(fivedaydata['DateTime'], format="%Y-%m-%d-%H-%M-%S")
+    datetime_object = pd.to_datetime(fivedaydata['DateTime'], format=ISO_DATETIME_FORMAT)
     fig, ax1 = plt.subplots()
     ax1.set_xlabel('Day-Hour')
     ax1.set_ylabel('Weight (lbs)', color=linecolor_blue)
@@ -181,7 +184,7 @@ try:
         # print(filecontents)
     dailystatsdata = filecontents   # .tail()
     # print(dailystatsdata.info())
-    datetime_object = pd.to_datetime(dailystatsdata['DateTime'], format="%Y-%m-%d")
+    datetime_object = pd.to_datetime(dailystatsdata['DateTime'], format=ISO_DATE_FORMAT)
     fig, ax1 = plt.subplots()
     ax1.set_xlabel('Day')
     ax1.set_ylabel('Median Weight Big (lbs)', color=linecolor_blue)
@@ -208,7 +211,7 @@ try:
         filecontents = pd.read_csv(inputfile, delimiter=',', index_col='DateTime')  # , parse_dates=[0], infer_datetime_format=True)      # nrows=5, index_col='DateTime'
     # print(filecontents.info())
 
-    filecontents.index = pd.to_datetime(filecontents.index, format="%Y-%m-%d-%H-%M-%S")
+    filecontents.index = pd.to_datetime(filecontents.index, format=ISO_DATETIME_FORMAT)
     # print(filecontents.info())
     column_list_left = ["WBigMed", "WSmlMed"]
     column_list_right = ["BigTemp", "WTemp"]
@@ -237,16 +240,16 @@ try:
         filecontents = pd.read_csv(inputfile, delimiter=',', index_col='DateTime')  # , parse_dates=[0], infer_datetime_format=True)      # nrows=5, index_col='DateTime'
     # print(filecontents.info())
 
-    filecontents.index = pd.to_datetime(filecontents.index, format="%Y-%m-%d-%H-%M-%S")
+    filecontents.index = pd.to_datetime(filecontents.index, format=ISO_DATETIME_FORMAT)
     # print(filecontents.info())
     column_list_left = ["WBigMed", "WSmlMed"]
     column_list_right = ["BigTemp", "WTemp"]
     # print(filecontents.index)
     # print(filecontents.DateTime)
     # print(filecontents.keys())
-    ax1 = filecontents[column_list_left].plot(figsize=(5, 5), title="All Data", style=".", color=[linecolor_blue, linecolor_green], legend=False, markersize=markersize_all)
+    ax1 = filecontents[column_list_left].plot(figsize=(5, 5), title="All Data", style=".", colormap="jet", legend=False, markersize=markersize_all)
     # ax2 = ax1.twinx()
-    ax2 = filecontents[column_list_right].plot(ax=ax1, secondary_y=True, style=".", color=[linecolor_red, linecolor_orange], legend=False, markersize=markersize_all)
+    ax2 = filecontents[column_list_right].plot(ax=ax1, secondary_y=True, style=".", colormap="Dark2", legend=False, markersize=markersize_all)
     ax1.set_xlabel('Day-Hour')
     ax1.set_ylabel('Weight (lbs)', color=linecolor_blue)
     ax1.tick_params('y', colors=linecolor_blue)
