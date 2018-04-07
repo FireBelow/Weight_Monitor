@@ -277,8 +277,8 @@ try:
 
         Q1 = round(filecontents["WBigMed"].quantile(.25), 2)
         Q3 = round(filecontents["WBigMed"].quantile(.75), 2)
-        low_outlier_threshold = Q1-(1.5*(Q3-Q1))
-        high_outlier_threshold = Q3+(1.5*(Q3-Q1))
+        low_outlier_threshold = Q1-(2*(Q3-Q1))
+        high_outlier_threshold = Q3+(2*(Q3-Q1))
         # print(round(low_outlier_threshold, 2), round(high_outlier_threshold, 2))
 
         return (round(low_outlier_threshold, 2), round(high_outlier_threshold, 2), n)
