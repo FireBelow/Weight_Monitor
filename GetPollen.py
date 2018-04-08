@@ -22,10 +22,16 @@ from matplotlib.dates import DateFormatter      # , YEARLY, rrulewrapper, RRuleL
 import matplotlib.dates as dates
 
 try:
-    TODAY = time.strftime("%Y%m%d")
-    # print(TODAY)
-    YESTERDAY = TODAY[0:6] + str((int(TODAY[6:]) - 1)).zfill(2)
-    YEAR = YESTERDAY[0:4]
+    MINUS_ONE_DAY = datetime.timedelta(days=1)
+    TODAY = datetime.datetime.now().date()
+    print(TODAY, type(TODAY))
+    YESTERDAY = TODAY - MINUS_ONE_DAY
+    # print(YESTERDAY, type(YESTERDAY))
+    YEAR = TODAY.year
+    # print(YEAR, type(YEAR))
+    ISO_DATETIME_FORMAT = "%Y-%m-%d %H:%M:%S"
+    ISO_DATE_FORMAT = "%Y-%m-%d"
+    FILE_DATE_FORMAT = "%Y%m%d"
     OUTPUTFILE_POLLEN = "/home/pi/Documents/Code/" + str(YEAR) + "_Pollen.csv"
     jsonfilename = "/home/pi/Documents/Code/private.json"
     with open(jsonfilename) as jsonfile:
@@ -128,7 +134,7 @@ try:
     pollen_forecast_weed = pollen_forecast["ragweedPollenIndex"]
     print(pollen_forecast_weed)
 
-    AllData = YESTERDAY + "," + str(pollen_yesterday_reportDate) + "," + str(pollen_yesterday_tree) + "," + str(pollen_yesterday_grass) + "," + str(pollen_yesterday_weed) + "," + str(pollen_yesterday_mold) + "," + str(pollen_yesterday_pollen) + "," + str(pollen_history_reportDate) + "," + str(pollen_history_tree) + "," + str(pollen_history_grass) + "," + str(pollen_history_weed) + "," + str(pollen_history_mold) + "," + str(pollen_history_pollen) + "," + str(pollen_forecast_reportDate) + "," + str(pollen_forecast_tree) + "," + str(pollen_forecast_grass) + "," + str(pollen_forecast_weed) + "\n"
+    AllData = YESTERDAY.strftime(ISO_DATE_FORMAT) + "," + str(pollen_yesterday_reportDate) + "," + str(pollen_yesterday_tree) + "," + str(pollen_yesterday_grass) + "," + str(pollen_yesterday_weed) + "," + str(pollen_yesterday_mold) + "," + str(pollen_yesterday_pollen) + "," + str(pollen_history_reportDate) + "," + str(pollen_history_tree) + "," + str(pollen_history_grass) + "," + str(pollen_history_weed) + "," + str(pollen_history_mold) + "," + str(pollen_history_pollen) + "," + str(pollen_forecast_reportDate) + "," + str(pollen_forecast_tree) + "," + str(pollen_forecast_grass) + "," + str(pollen_forecast_weed) + "\n"
     AllData = AllData.replace("[", "")
     AllData = AllData.replace("]", "")
     AllData = AllData.replace("'", "")
