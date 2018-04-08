@@ -2,6 +2,7 @@
 *.json
 private.*
 *.txt
+*credentials*
 
 #Ignore Working Files
 test.*
