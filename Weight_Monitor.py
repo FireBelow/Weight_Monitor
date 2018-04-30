@@ -16,6 +16,8 @@ import json
 from weightfunctions import read_scale, write_file, get_weather, IFTTTmsg, calculate, check_web_response, weather_date_only
 
 # TO DO:
+# Add "cat /sys/class/thermal/thermal_zone0/temp" to record raspi board temp
+# "vcgencmd measure_volts core" for board voltage
 # read last reading and look for crazy deltas
 # watch for huge and negative weights
 # initialize variables
@@ -35,10 +37,6 @@ try:
     # # add handler to logger object
     logger.addHandler(LogHandler)
     logger.info("Program started")
-
-    # start = time.time()
-    # end = time.time() - start
-
     
     MINUS_ONE_DAY = datetime.timedelta(days=1)
     TODAY = datetime.datetime.now().date()
@@ -82,13 +80,22 @@ try:
     def read_retry_multi(sensor, pin, retries=15, delay_seconds=2, platform=None, num_reads=5):
         """Reads sensor using "read_retry" multiple times (num_reads) and returns
         data as a list"""
+        HUMID_THRESHOLD = 1000.0
+        TEMP_THRESHOLD = 1000.0
         data_list = []
         while len(data_list) < num_reads:
             humidity, temperature = Adafruit_DHT.read_retry(sensor, pin, retries, delay_seconds, platform)
             if humidity is not None and temperature is not None:
-                TempHum = (round(humidity, 2), round(temperature, 2))
-                data_list.append(TempHum)
-                time.sleep(2)
+                if temperature < TEMP_THRESHOLD and humidity < HUMID_THRESHOLD:
+                    print(round(humidity,4), round(temperature, 4))
+                    # TempHum = (round(humidity, 2), round(temperature, 2))
+                    data_list.append(TempHum)
+                    time.sleep(2)
+                else:
+                    problem_msg = "TempHum threshold error, read again"
+                    print(problem_msg)
+                    logger.info(problem_msg)
+                    IFTTTmsg(problem_msg)
         return data_list
 
     SENSOR_TYPE = Adafruit_DHT.DHT22
