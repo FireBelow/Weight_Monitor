@@ -9,7 +9,7 @@ import numpy as np
 import RPi.GPIO as GPIO
 import subprocess
 import datetime
-from hx711 import HX711		# import the class HX711
+from hx711 import HX711     # import the class HX711
 import requests
 from requests.adapters import HTTPAdapter
 from requests.packages.urllib3.util.retry import Retry
@@ -35,8 +35,8 @@ def read_scale(READINGS, DATAPIN, CLOCKPIN):
     hx = HX711(dout_pin=DATAPIN, pd_sck_pin=CLOCKPIN, gain=128, channel='A')
 
     # print("Reset")
-    result = hx.reset()		# Before we start, reset the hx711 (not necessary)
-    if result:			# you can check if the reset was successful
+    result = hx.reset()     # Before we start, reset the hx711 (not necessary)
+    if result:          # you can check if the reset was successful
         print('Ready to use')
     else:
         print('not ready')
@@ -45,7 +45,7 @@ def read_scale(READINGS, DATAPIN, CLOCKPIN):
     data = hx.get_raw_data(READINGS)
     # print('Raw data: ' + str(data))
 
-    # if data != False:	# always check if you get correct value or only False
+    # if data != False: # always check if you get correct value or only False
     #    print('Raw data: ' + str(data))
     # else:
     #    print('invalid data')
@@ -70,7 +70,7 @@ def write_file(FILENAME, FILEOPERATION, SAVEDDATA):
     logger = logging.getLogger("WeightMonitor.WeightFunctions.add")
     logger.info("writing file")
 
-    with open(FILENAME, FILEOPERATION) as outputfile:		#recommended way to open files to ensure the file closes properly
+    with open(FILENAME, FILEOPERATION) as outputfile:       #recommended way to open files to ensure the file closes properly
         outputfile.write(SAVEDDATA)
 
     return
@@ -137,10 +137,24 @@ def get_weather():
                 # cod_response = weather_data_open["cod"]
                 # print(cod_response)
                 weather_output = ""
-                main = weather_data_open["weather"][0]["main"]
+                if weather_data_open.get("weather") == "None":
+                    if weather_data_open["weather"].get(0) == "None":
+                        if weather_data_open["weather"][0].get("main") == "None":
+                            main = ""
+                        else:
+                            main = weather_data_open["weather"][0]["main"]
+                        if weather_data_open["weather"][0].get("description") == "None":
+                            description = ""
+                        else:
+                            description = weather_data_open["weather"][0]["description"].replace(" ", "_")
+                    else:
+                        main = weather_data_open["weather"][0]["main"]
+                        description = weather_data_open["weather"][0]["description"].replace(" ", "_")
+                else:
+                    main = weather_data_open["weather"][0]["main"]
+                    description = weather_data_open["weather"][0]["description"].replace(" ", "_")
                 # print(main)
                 weather_output = weather_output + main + ","
-                description = weather_data_open["weather"][0]["description"].replace(" ", "_")
                 # print(description)
                 weather_output = weather_output + description + ","
                 temp = weather_data_open["main"]["temp"]
@@ -234,10 +248,10 @@ def get_weather():
         IFTTTmsg('Weather Exception')
         # if weather_data_open:
         # print("weather_data_open not blank")
-        write_file("/home/pi/Documents/Code/000WEATHERERROR.txt",'a', str(weather_data_open) + "\n")
+        write_file("/home/pi/Documents/Code/000WEATHERERROR.txt", 'a', str(weather_data_open) + "\n")
         # if weather_data_under:
         # print("weather_data_under not blank")
-        write_file("/home/pi/Documents/Code/000WEATHERERROR.txt",'a', str(weather_data_under) + "\n")
+        write_file("/home/pi/Documents/Code/000WEATHERERROR.txt", 'a', str(weather_data_under) + "\n")
         raise
         # print("Exception")
 
@@ -250,9 +264,9 @@ def IFTTTmsg(MSG):
 
     jsonfilename = "/home/pi/Documents/Code/private.json"
     with open(jsonfilename) as jsonfile:
-        jsondata = json.load(jsonfile)          #read json
+        jsondata = json.load(jsonfile)          # read json
         IFTTTKey = jsondata['IFTTT']['key']
-        #print(IFTTTKey)
+        # print(IFTTTKey)
 
     payload = {'value1': MSG}
     # print(payload)
