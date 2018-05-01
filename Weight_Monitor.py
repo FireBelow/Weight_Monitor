@@ -80,15 +80,15 @@ try:
     def read_retry_multi(sensor, pin, retries=15, delay_seconds=2, platform=None, num_reads=5):
         """Reads sensor using "read_retry" multiple times (num_reads) and returns
         data as a list"""
-        HUMID_THRESHOLD = 1000.0
-        TEMP_THRESHOLD = 1000.0
+        HUMID_THRESHOLD = 300.0
+        TEMP_THRESHOLD = 110.0
         data_list = []
         while len(data_list) < num_reads:
             humidity, temperature = Adafruit_DHT.read_retry(sensor, pin, retries, delay_seconds, platform)
             if humidity is not None and temperature is not None:
                 if temperature < TEMP_THRESHOLD and humidity < HUMID_THRESHOLD:
-                    print(round(humidity,4), round(temperature, 4))
-                    # TempHum = (round(humidity, 2), round(temperature, 2))
+                    # print(round(humidity,4), round(temperature, 4))
+                    TempHum = (round(humidity, 2), round(temperature, 2))
                     data_list.append(TempHum)
                     time.sleep(2)
                 else:
@@ -110,8 +110,8 @@ try:
     print("Read BIGtemphum")
     BIGtemphum = read_retry_multi(SENSOR_TYPE, BIG_TEMPHUM_PIN, DHT_NUM_READS)        # def read_retry(sensor, pin, retries=15, delay_seconds=2, platform=None):
     # print(BIGtemphum)
-    BIGtemperature = [temp * (9 / 5) + 32 for temp, humid in BIGtemphum]       # convert from Celcius to F
-    BIGhumidity = [humid for temp, humid in BIGtemphum]
+    BIGtemperature = [temp * (9 / 5) + 32 for humid, temp in BIGtemphum]       # convert from Celcius to F
+    BIGhumidity = [humid for humid, temp in BIGtemphum]
     print(round(np.std(BIGtemperature), 2), round(np.std(BIGhumidity), 2))
     if np.std(BIGtemperature) > DHT_STDEV_THRESHOLD or np.std(BIGhumidity) > DHT_STDEV_THRESHOLD:
         for i in range(2, RETRY_ATTEMPTS + 2):
@@ -162,8 +162,8 @@ try:
     # print(SMLtemphum)
     # print(SMLtemphum[0][0])
     # print(SMLtemphum[:][0])
-    SMLtemperature = [temp * (9 / 5) + 32 for temp, humid in SMLtemphum]       # convert from Celcius to F
-    SMLhumidity = [humid for temp, humid in SMLtemphum]
+    SMLtemperature = [temp * (9 / 5) + 32 for humid, temp in SMLtemphum]       # convert from Celcius to F
+    SMLhumidity = [humid for humid, temp in SMLtemphum]
     # print(SMLtemperature)
     # print(SMLhumidity)
     print(round(np.mean(SMLtemperature), 2),
@@ -213,7 +213,8 @@ try:
     BIGdata = 0.0002311996 * np.median(BIGdata_raw) + 7.4413911706      # convert raw to meaningful
     print(round(np.median(BIGdata), 2))
     # BIGoffset = 0.0249121084 * np.median(BIGtemperature) - 2.4013925301        # temp calibration with slightly larger temp range but also more nosie
-    BIGoffset = 0.0206347975 * np.median(BIGtemperature) - 2.0311528126     # temp calibration with smaller range but really good R^2
+    # BIGoffset = 0.0206347975 * np.median(BIGtemperature) - 2.0311528126     # temp calibration with smaller range but really good R^2
+    BIGoffset = 0.0371426355 * np.median(BIGhumidity) - 1.3708392923     # humid calibration with smaller range but really good R^2
     # print(round(np.median(BIGoffset), 2))
     BIGdata = BIGdata + BIGoffset
     # print(round(np.median(BIGdata), 2))
@@ -248,7 +249,8 @@ try:
     print(round(np.median(SMLdata_raw), 2), round(np.std(SMLdata_raw), 2))
     SMLdata = 0.0001398789 * np.median(SMLdata_raw) + 208.9558945667      # convert raw to meaningful
     print(round(np.median(SMLdata), 2))
-    SMLoffset = -0.0033135985 * np.median(BIGtemperature) + 0.357458148      # temp calibration with fewer data points than big scale
+    # SMLoffset = -0.0033135985 * np.median(BIGhumidity) + 0.357458148      # temp calibration with fewer data points than big scale
+    SMLoffset = -0.0059644774 * np.median(BIGhumidity) + 0.2514229949      # humid calibration with fewer data points than big scale
     # print(round(np.median(SMLoffset), 2))
     SMLdata = SMLdata + SMLoffset
     # print(round(np.median(SMLdata), 2))
