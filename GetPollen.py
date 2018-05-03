@@ -95,14 +95,15 @@ try:
     pollen_history_reportDate = pollen_history["reportDate"]
     pollen_history_reportDate = weather_date_only(pollen_history_reportDate)
     # print(pollen_history_reportDate)
+    print("History: Tree, Grass, Weed, Mold, Pollen")
     pollen_history_tree = pollen_history["tree"]
-    # print(pollen_history_tree)
+    print(pollen_history_tree)
     pollen_history_grass = pollen_history["grass"]
-    # print(pollen_history_grass)
+    print(pollen_history_grass)
     pollen_history_weed = pollen_history["weed"]
-    # print(pollen_history_weed)
+    print(pollen_history_weed)
     pollen_history_mold = pollen_history["mold"]
-    # print(pollen_history_mold)
+    print(pollen_history_mold)
     pollen_history_pollen = pollen_history["pollen"]
     print(pollen_history_pollen)
 
@@ -127,6 +128,7 @@ try:
     pollen_forecast_reportDate = pollen_forecast["fcstValidLocal"]
     pollen_forecast_reportDate = weather_date_only(pollen_forecast_reportDate)
     # print(pollen_forecast_reportDate)
+    print("Forecasts: Tree, Grass, Weed")
     pollen_forecast_tree = pollen_forecast["treePollenIndex"]
     print(pollen_forecast_tree)
     pollen_forecast_grass = pollen_forecast["grassPollenIndex"]
@@ -134,7 +136,23 @@ try:
     pollen_forecast_weed = pollen_forecast["ragweedPollenIndex"]
     print(pollen_forecast_weed)
 
-    AllData = YESTERDAY.strftime(ISO_DATE_FORMAT) + "," + str(pollen_yesterday_reportDate) + "," + str(pollen_yesterday_tree) + "," + str(pollen_yesterday_grass) + "," + str(pollen_yesterday_weed) + "," + str(pollen_yesterday_mold) + "," + str(pollen_yesterday_pollen) + "," + str(pollen_history_reportDate) + "," + str(pollen_history_tree) + "," + str(pollen_history_grass) + "," + str(pollen_history_weed) + "," + str(pollen_history_mold) + "," + str(pollen_history_pollen) + "," + str(pollen_forecast_reportDate) + "," + str(pollen_forecast_tree) + "," + str(pollen_forecast_grass) + "," + str(pollen_forecast_weed) + "\n"
+    AllData = YESTERDAY.strftime(ISO_DATE_FORMAT) + "," \
+        + str(pollen_yesterday_reportDate) + ","        \
+        + str(pollen_yesterday_tree) + ","              \
+        + str(pollen_yesterday_grass) + ","             \
+        + str(pollen_yesterday_weed) + ","              \
+        + str(pollen_yesterday_mold) + ","              \
+        + str(pollen_yesterday_pollen) + ","            \
+        + str(pollen_history_reportDate) + ","          \
+        + str(pollen_history_tree) + ","                \
+        + str(pollen_history_grass) + ","               \
+        + str(pollen_history_weed) + ","                \
+        + str(pollen_history_mold) + ","                \
+        + str(pollen_history_pollen) + ","              \
+        + str(pollen_forecast_reportDate) + ","         \
+        + str(pollen_forecast_tree) + ","               \
+        + str(pollen_forecast_grass) + ","              \
+        + str(pollen_forecast_weed) + "\n"
     AllData = AllData.replace("[", "")
     AllData = AllData.replace("]", "")
     AllData = AllData.replace("'", "")
@@ -147,6 +165,7 @@ try:
         print("File does not exist")
         write_file(OUTPUTFILE_POLLEN, 'w', PollenHeaders)
 
+    write_file(OUTPUTFILE_POLLEN, 'a', PollenHeaders)		# Useful for testing
     write_file(OUTPUTFILE_POLLEN, 'a', AllData)
 
 except:
