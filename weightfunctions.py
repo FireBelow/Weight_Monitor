@@ -137,13 +137,13 @@ def get_weather():
                 # cod_response = weather_data_open["cod"]
                 # print(cod_response)
                 weather_output = ""
-                if weather_data_open.get("weather") == "None":
-                    if weather_data_open["weather"].get(0) == "None":
-                        if weather_data_open["weather"][0].get("main") == "None":
+                if weather_data_open.get("weather") is "None":
+                    if weather_data_open["weather"].get(0) is "None":
+                        if weather_data_open["weather"][0].get("main") is "None":
                             main = ""
                         else:
                             main = weather_data_open["weather"][0]["main"]
-                        if weather_data_open["weather"][0].get("description") == "None":
+                        if weather_data_open["weather"][0].get("description") is "None":
                             description = ""
                         else:
                             description = weather_data_open["weather"][0]["description"].replace(" ", "_")
@@ -154,58 +154,94 @@ def get_weather():
                     main = weather_data_open["weather"][0]["main"]
                     description = weather_data_open["weather"][0]["description"].replace(" ", "_")
                 # print(main)
-                weather_output = weather_output + main + ","
                 # print(description)
-                weather_output = weather_output + description + ","
-                temp = weather_data_open["main"]["temp"]
-                # print(temp)
-                weather_output = weather_output + str(temp) + ","
-                pressure = weather_data_open["main"]["pressure"]
-                # print(pressure)
-                weather_output = weather_output + str(pressure) + ","
-                humidity = weather_data_open["main"]["humidity"]
-                # print(humidity)
-                weather_output = weather_output + str(humidity) + ","
-                WindSpeed = weather_data_open["wind"]["speed"]
-                # print(WindSpeed)
-                weather_output = weather_output + str(WindSpeed) + ","
-                WindDeg = int(weather_data_open["wind"]["deg"])
-                # print(WindDeg)
-                weather_output = weather_output + str(WindDeg) + ","
-                if "rain" in weather_data_open:
-                    write_file("/home/pi/Documents/Code/000RAIN.txt", 'w', str(weather_data_open))
-                    print(weather_data_open["rain"].keys())
-                    rain = weather_data_open["rain"]["3h"]
-                    # print(rain)
-                    weather_output = weather_output + str(rain) + ","
+                weather_output = weather_output + main + "," + description + ","
+                if weather_data_open.get("main") is None:
+                    temp = ""
+                    pressure = ""
+                    humidity = ""
                 else:
+                    if weather_data_open["main"].get("temp") is None:
+                        temp = ""
+                    else:
+                        temp = weather_data_open["main"]["temp"]
+                        # print(temp)
+                    if weather_data_open["main"].get("pressure") is None:
+                        pressure = ""
+                    else:
+                        pressure = weather_data_open["main"]["pressure"]
+                        # print(pressure)
+                    if weather_data_open["main"].get("humidity") is None:
+                        humidity = ""
+                    else:
+                        humidity = weather_data_open["main"]["humidity"]
+                        # print(humidity)
+                weather_output = weather_output + str(temp) + "," + str(pressure) + "," + str(humidity) + ","
+                if weather_data_open.get("wind") is None:
+                    WindSpeed = ""
+                    WindDeg = ""
+                else:
+                    if weather_data_open["wind"].get("speed") is None:
+                        WindSpeed = ""
+                    else:
+                        WindSpeed = weather_data_open["wind"]["speed"]
+                        # print(WindSpeed)
+                    if weather_data_open["wind"].get("deg") is None:
+                        WindDeg = ""
+                    else:
+                        WindDeg = int(weather_data_open["wind"]["deg"])
+                        # print(WindDeg)
+                weather_output = weather_output + str(WindSpeed) + "," + str(WindDeg) + ","
+                if weather_data_open.get("rain") is None:
                     print("No rain")
                     rain = ""
-                    weather_output = weather_output + str(rain) + ","
-                if "snow" in weather_data_open:
-                    write_file("/home/pi/Documents/Code/000SNOW.txt", 'w', str(weather_data_open))
-                    print(weather_data_open["snow"].keys())
-                    snow = weather_data_open["snow"]["3h"]
-                    # print(snow)
-                    weather_output = weather_output + str(snow) + ","
                 else:
+                    write_file("/home/pi/Documents/Code/000RAIN.txt", 'w', str(weather_data_open))
+                    # print(weather_data_open["rain"].keys())
+                    rain = weather_data_open["rain"]["3h"]
+                    # print(rain)
+                weather_output = weather_output + str(rain) + ","
+                if weather_data_open.get("snow") is None:
                     print("No snow")
                     snow = ""
-                    weather_output = weather_output + str(snow) + ","
-                visibility = weather_data_open["visibility"]
-                # print(visibility)
+                else:
+                    write_file("/home/pi/Documents/Code/000SNOW.txt", 'w', str(weather_data_open))
+                    # print(weather_data_open["snow"].keys())
+                    snow = weather_data_open["snow"]["3h"]
+                    # print(snow)
+                weather_output = weather_output + str(snow) + ","
+                if weather_data_open.get("visibility") is None:
+                    visibility = ""
+                else:
+                    visibility = weather_data_open["visibility"]
+                    # print(visibility)
                 weather_output = weather_output + str(visibility) + ","
-                clouds = weather_data_open["clouds"]["all"]
-                # print(clouds)
+                if weather_data_open.get("clouds") is None:
+                    clouds = ""
+                else:
+                    if weather_data_open["clouds"].get("all") is None:
+                        clouds = ""
+                    else:
+                        clouds = weather_data_open["clouds"]["all"]
+                        # print(clouds)
                 weather_output = weather_output + str(clouds) + ","
-                # print(weather_data_open["sys"]["sunrise"])
-                sunrise = time.strftime("%H%M", time.localtime(int(weather_data_open["sys"]["sunrise"])))
-                # print(sunrise)
-                weather_output = weather_output + str(sunrise) + ","
-                # print(weather_data_open["sys"]["sunset"])
-                sunset = time.strftime("%H%M", time.localtime(int(weather_data_open["sys"]["sunset"])))
-                # print(sunset)
-                weather_output = weather_output + str(sunset) + ","
+                if weather_data_open.get("sys") is None:
+                    sunrise = ""
+                    sunset = ""
+                else:
+                    if weather_data_open["sys"].get("sunrise") is None:
+                        sunrise = ""
+                    else:
+                        # print(weather_data_open["sys"]["sunrise"])
+                        sunrise = time.strftime("%H%M", time.localtime(int(weather_data_open["sys"]["sunrise"])))
+                        # print(sunrise)
+                    if weather_data_open["sys"].get("sunset") is None:
+                        sunset = ""
+                    else:
+                        # print(weather_data_open["sys"]["sunset"])
+                        sunset = time.strftime("%H%M", time.localtime(int(weather_data_open["sys"]["sunset"])))
+                        # print(sunset)
+                weather_output = weather_output + str(sunrise) + "," + str(sunset) + ","
                 # print(weather_output)
                 break
 
@@ -224,21 +260,39 @@ def get_weather():
 
             if weather_data_under:
                 # print("WeatherUnder data exists")
-                solarradiation = weather_data_under["current_observation"]["solarradiation"]
-                # print(solarradiation)
-                weather_output = weather_output + str(solarradiation) + ","
-                UV = weather_data_under["current_observation"]["UV"]
-                # print(UV)
-                weather_output = weather_output + str(UV) + ","
-                precip_1hr_in = weather_data_under["current_observation"]["precip_1hr_in"]
-                # print(precip_1hr_in)
-                weather_output = weather_output + str(precip_1hr_in) + ","
-                precip_today_in = weather_data_under["current_observation"]["precip_today_in"]
-                # print(precip_today_in)
-                weather_output = weather_output + str(precip_today_in)      ######removed comma here since obs_time is not currently used
-                observation_time = weather_data_under["current_observation"]["observation_time"]
-                print(observation_time)
-                # weather_output = "," + weather_output + str(observation_time)
+                if weather_data_under.get("current_observation") is None:
+                    solarradiation = ""
+                    UV = ""
+                    precip_1hr_in = ""
+                    precip_today_in = ""
+                else:
+                    if weather_data_under["current_observation"].get("solarradiation") is None:
+                        solarradiation = ""
+                    else:
+                        solarradiation = weather_data_under["current_observation"]["solarradiation"]
+                        # print(solarradiation)
+                    if weather_data_under["current_observation"].get("UV") is None:
+                        UV = ""
+                    else:
+                        UV = weather_data_under["current_observation"]["UV"]
+                        # print(UV)
+                    if weather_data_under["current_observation"].get("precip_1hr_in") is None:
+                        precip_1hr_in = ""
+                    else:
+                        precip_1hr_in = weather_data_under["current_observation"]["precip_1hr_in"]
+                        # print(precip_1hr_in)
+                    if weather_data_under["current_observation"].get("precip_today_in") is None:
+                        precip_today_in = ""
+                    else:
+                        precip_today_in = weather_data_under["current_observation"]["precip_today_in"]
+                        # print(precip_today_in)
+                    if weather_data_under["current_observation"].get("observation_time") is None:
+                        observation_time = ""
+                    else:
+                        observation_time = weather_data_under["current_observation"]["observation_time"]
+                        print(observation_time)
+                        # DONT JUST ADD THIS weather_output = "," + weather_output + str(observation_time)
+                weather_output = weather_output + str(solarradiation) + "," + str(UV) + "," + str(precip_1hr_in) + "," + str(precip_today_in)
                 break
 
         # print(weather_output)
