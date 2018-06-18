@@ -95,7 +95,7 @@ try:
                     problem_msg = "TempHum threshold error, read again"
                     print(problem_msg)
                     logger.info(problem_msg)
-                    IFTTTmsg(problem_msg)
+                    # IFTTTmsg(problem_msg)
         return data_list
 
     SENSOR_TYPE = Adafruit_DHT.DHT22
