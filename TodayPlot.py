@@ -7,7 +7,8 @@ import pandas as pd
 # import subprocess
 import datetime
 import time
-# import os.path
+import os.path
+import shutil
 import logging
 # import json
 import matplotlib as mpl            # both of these lines must be before importing matplotlib.pyplot
@@ -136,6 +137,11 @@ try:
     # plt.show()         #might not work with "Agg" set above during import
     # logger.info("Save Plot")
     plt.savefig(TODAY_FILENAME, dpi=300)
+    if os.path.exists(TODAY_FILENAME):
+        print("File exists")
+        shutil.copyfile(TODAY_FILENAME, "/home/pi/Documents/Code/www/images/today.jpg")
+    else:
+        IFTTTmsg("No Plot")
 
     # Plot multi day data
     fivedaydata = pd.DataFrame()
@@ -171,6 +177,11 @@ try:
     ax1.plot_date(x=datetime_object, y=fivedaydata['WSmlMed'], xdate=True, ydate=False, color=linecolor_red, marker=".", markersize=markersize_all)
     # plt.show()
     plt.savefig(FIVEDAY_FILENAME, dpi=300)
+    if os.path.exists(FIVEDAY_FILENAME):
+        print("File exists")
+        shutil.copyfile(FIVEDAY_FILENAME, "/home/pi/Documents/Code/www/images/fiveday.jpg")
+    else:
+        IFTTTmsg("No Plot")
 
     # Plot DailyStats
     INPUTFILEPATH_DAILYSTATS = "/home/pi/Documents/Code/" + str(YEAR) + "_DailyStats.csv"
@@ -205,6 +216,11 @@ try:
     ax2.tick_params('y', colors=linecolor_red)
     plt.savefig(DAILYSTATS_FILENAME, dpi=300)
     # plt.show()
+    if os.path.exists(DAILYSTATS_FILENAME):
+        print("File exists")
+        shutil.copyfile(DAILYSTATS_FILENAME, "/home/pi/Documents/Code/www/images/dailystats.jpg")
+    else:
+        IFTTTmsg("No Plot")
 
     with open(INPUTFILEPATH_TODAY, 'r') as inputfile:
         # print(inputfile)
@@ -250,6 +266,7 @@ try:
     ax1 = filecontents[column_list_left].plot(figsize=(5, 5), title="All Data", style=".", colormap="jet", legend=False, markersize=markersize_all)
     # ax2 = ax1.twinx()
     ax2 = filecontents[column_list_right].plot(ax=ax1, secondary_y=True, style=".", colormap="Dark2", legend=False, markersize=markersize_all)
+    # plt.fill_between(filecontents.index, 95, 105, color='b', alpha=0.2)
     ax1.set_xlabel('Day-Hour')
     ax1.set_ylabel('Weight (lbs)', color=linecolor_blue)
     ax1.tick_params('y', colors=linecolor_blue)
