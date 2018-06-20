@@ -34,6 +34,8 @@ try:
     FILE_DATE_FORMAT = "%Y%m%d"
     OUTPUTFILE_POLLEN = "/home/pi/Documents/Code/" + str(YEAR) + "_Pollen.csv"
     jsonfilename = "/home/pi/Documents/Code/private.json"
+    TEMP_FILEPATH = "/home/pi/Documents/Code/temp.html"
+    POLLEN_DATADUMP_FILEPATH = "/home/pi/Documents/Code/pollen_dump.html"
     with open(jsonfilename) as jsonfile:
         jsondata = json.load(jsonfile)          # read json
         Zip_Code = jsondata['weather']['zipcode']
@@ -43,6 +45,7 @@ try:
     response = requests.get(URL_weathercom)
     # print(response.text)
     html_data = response.text
+    write_file(TEMP_FILEPATH, 'w', html_data)
     # write_file("/home/pi/Documents/Code/test.html", 'w', html_data)
     prog = re.compile("\"vt1pastPollen\"[A-Za-z0-9:\-\[\]\{\"\,\. ]*}")
     # See if the pattern matches
@@ -51,7 +54,7 @@ try:
 
     # Get Yesterday Pollen data
     # "vt1pastPollen":{"reportDate":["2018-03-16T12:44:20.000-04:00"],"tree":[2],"grass":[0],"weed":[0],"mold":[1],"pollen":[25]}}
-    print(result_past[0])        # pollen data for yesterday
+    # print("Yesterday " + str(result_past[0]))        # pollen data for yesterday
     prog = re.compile("\:null\}")
     if bool(prog.findall(result_past[0])):
         print("null found: weekend no data")
@@ -65,7 +68,8 @@ try:
         data = result_past[0].split(":{")
         data = "{" + data[1]
 
-        pollen_yesterday = dict(eval(data))
+        pollen_yesterday = json.loads(data)
+        # pollen_yesterday = dict(eval(data))
         # print(pollen_yesterday)
         # print(pollen_yesterday.keys())
         pollen_yesterday_reportDate = pollen_yesterday["reportDate"][0]
@@ -81,37 +85,43 @@ try:
         # print(pollen_yesterday_mold)
         pollen_yesterday_pollen = pollen_yesterday["pollen"]
         # print(pollen_yesterday_pollen)
+        print("Yesterday ", pollen_yesterday_reportDate, pollen_yesterday_tree, pollen_yesterday_grass, pollen_yesterday_weed, pollen_yesterday_mold, pollen_yesterday_pollen)
 
     # All pollen history
     # "vt1pastPollen":null}     #weekend null readings
-    # print(result_past[1])
-    data = result_past[1].split(":{")
-    # print(data)
-    data = "{" + data[1]
-    # print(data)
-    pollen_history = dict(eval(data))
-    # print(pollen_history)
-    # print(pollen_history.keys())
-    pollen_history_reportDate = pollen_history["reportDate"]
-    pollen_history_reportDate = weather_date_only(pollen_history_reportDate)
-    # print(pollen_history_reportDate)
-    print("History: Tree, Grass, Weed, Mold, Pollen")
-    pollen_history_tree = pollen_history["tree"]
-    print(pollen_history_tree)
-    pollen_history_grass = pollen_history["grass"]
-    print(pollen_history_grass)
-    pollen_history_weed = pollen_history["weed"]
-    print(pollen_history_weed)
-    pollen_history_mold = pollen_history["mold"]
-    print(pollen_history_mold)
-    pollen_history_pollen = pollen_history["pollen"]
-    print(pollen_history_pollen)
+    # print("History " + str(result_past[1]))
+    prog = re.compile("\:null\}")
+    if bool(prog.findall(result_past[1])):
+        print("null found: weekend no data")
+    else:
+        data = result_past[1].split(":{")
+        # print(data)
+        data = "{" + data[1]
+        # print(data)
+        pollen_history = json.loads(data)
+        # pollen_history = dict(eval(data))
+        # print(pollen_history)
+        # print(pollen_history.keys())
+        pollen_history_reportDate = pollen_history["reportDate"]
+        pollen_history_reportDate = weather_date_only(pollen_history_reportDate)
+        # print(pollen_history_reportDate)
+        print("History: Tree, Grass, Weed, Mold, Pollen")
+        pollen_history_tree = pollen_history["tree"]
+        print(pollen_history_tree)
+        pollen_history_grass = pollen_history["grass"]
+        print(pollen_history_grass)
+        pollen_history_weed = pollen_history["weed"]
+        print(pollen_history_weed)
+        pollen_history_mold = pollen_history["mold"]
+        print(pollen_history_mold)
+        pollen_history_pollen = pollen_history["pollen"]
+        print(pollen_history_pollen)
 
     # Get Pollen Forecast
     # "vt1idxPollenDayPart":{"day":{"fcstValid":[1521370800,1521457200,1521543600,1521630000,1521716400,1521802800,1521889200,1521975600,1522062000,1522148400,1522234800,1522321200,1522407600,1522494000,1522580400],"fcstValidLocal":["2018-03-18T07:00:00-0400","2018-03-19T07:00:00-0400","2018-03-20T07:00:00-0400","2018-03-21T07:00:00-0400","2018-03-22T07:00:00-0400","2018-03-23T07:00:00-0400","2018-03-24T07:00:00-0400","2018-03-25T07:00:00-0400","2018-03-26T07:00:00-0400","2018-03-27T07:00:00-0400","2018-03-28T07:00:00-0400","2018-03-29T07:00:00-0400","2018-03-30T07:00:00-0400","2018-03-31T07:00:00-0400","2018-04-01T07:00:00-0400"],"dayInd":["D","D","D","D","D","D","D","D","D","D","D","D","D","D","D"],"num":[1,3,5,7,9,11,13,15,17,19,21,23,25,27,29],"daypartName":["Today","Tomorrow","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday"],"grassPollenIndex":[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],"grassPollenCategory":["None","None","None","None","None","None","None","None","None","None","None","None","None","None","None"],"treePollenIndex":[2,2,0,0,1,2,1,1,2,1,0,0,1,1,1],"treePollenCategory":["Moderate","Moderate","None","None","Low","Moderate","Low","Low","Moderate","Low","None","None","Low","Low","Low"],"ragweedPollenIndex":[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],"ragweedPollenCategory":["None","None","None","None","None","None","None","None","None","None","None","None","None","None","None"]},"night"
     prog = re.compile("\"vt1idxPollenDayPart\"[A-Za-z0-9:\-\[\]\{\}\"\,\. ]*\"night\":\{\"fcstValid\"")
     result_forecast = prog.findall(html_data)
-    # print(result_forecast)
+    # print("Forecast " + str(result_forecast))
     data = result_forecast[0].split("night")
     # print(data[0])
     data = data[0].replace("\"vt1idxPollenDayPart\":{\"day\":", "")
@@ -121,7 +131,8 @@ try:
     # data = data + "}"
     # print(data)
     data = data.replace("null", "\"null\"")
-    pollen_forecast = dict(eval(data))
+    pollen_forecast = json.loads(data)
+    # pollen_forecast = dict(eval(data))
     # print(pollen_forecast)
     # print(pollen_forecast.keys())
     # dict_keys(['ragweedPollenIndex', 'grassPollenCategory', 'grassPollenIndex', 'ragweedPollenCategory', 'treePollenCategory', 'num', 'treePollenIndex', 'fcstValidLocal', 'daypartName', 'fcstValid', 'dayInd'])
@@ -165,14 +176,19 @@ try:
         print("File does not exist")
         write_file(OUTPUTFILE_POLLEN, 'w', PollenHeaders)
 
-    write_file(OUTPUTFILE_POLLEN, 'a', PollenHeaders)		# Useful for testing
+    write_file(OUTPUTFILE_POLLEN, 'a', PollenHeaders)       # Useful for testing
     write_file(OUTPUTFILE_POLLEN, 'a', AllData)
 
 except:
     IFTTTmsg('Pollen Exception')
     logging.exception("Pollen Exception")
+    with open(TEMP_FILEPATH, 'r') as outputfile: 
+        temp_data = outputfile.read()
+    write_file(POLLEN_DATADUMP_FILEPATH, 'a', temp_data)
     raise
     # print("Exception")
 
 finally:
+    # if os.path.exists(TEMP_FILEPATH):
+    #     os.path.remove(TEMP_FILEPATH)
     print("Done")
