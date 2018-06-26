@@ -532,3 +532,23 @@ def weather_date_only(date_list):
             history_dates.append(i.split("T")[0])
             # print(history_dates)
         return history_dates
+
+
+def get_rain_json(forecast, zipcode):
+    TEMP_FILEPATH = "/home/pi/Documents/Code/rain_temp.html"
+    if forecast is "allergy":
+        URL_weathercom = "https://weather.com/forecast/allergy/l/" + zipcode + ":4:US"
+    if forecast is "agriculture":
+        URL_weathercom = "https://weather.com/forecast/agriculture/l/" + zipcode + ":4:US"
+    else:
+        print("wrong forecast format")
+        return
+    response = requests.get(URL_weathercom)
+    # print(response.text)
+    html_data = response.text
+    write_file(TEMP_FILEPATH, 'w', html_data)
+    html_data = html_data.split("window.__data=")
+    # print(data[1])
+    html_data = html_data[1].split(";window.experience={")
+    # print(html_data[0])
+    return json.loads(html_data[0])
