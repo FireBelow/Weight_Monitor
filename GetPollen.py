@@ -115,6 +115,7 @@ try:
         pollen_history_mold = pollen_history["mold"]
         print(pollen_history_mold)
         pollen_history_pollen = pollen_history["pollen"]
+        print(len(pollen_history_pollen))     #get array length
         print(pollen_history_pollen)
 
     # Get Pollen Forecast
@@ -145,6 +146,7 @@ try:
     pollen_forecast_grass = pollen_forecast["grassPollenIndex"]
     print(pollen_forecast_grass)
     pollen_forecast_weed = pollen_forecast["ragweedPollenIndex"]
+    print(len(pollen_forecast_weed))
     print(pollen_forecast_weed)
 
     AllData = YESTERDAY.strftime(ISO_DATE_FORMAT) + "," \
@@ -167,7 +169,8 @@ try:
     AllData = AllData.replace("[", "")
     AllData = AllData.replace("]", "")
     AllData = AllData.replace("'", "")
-    # print(AllData)
+    AllData = AllData.replace(" ", "")
+    print(AllData)
 
     try:
         open(OUTPUTFILE_POLLEN, 'r')
