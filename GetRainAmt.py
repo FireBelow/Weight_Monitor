@@ -39,7 +39,7 @@ try:
     with open(jsonfilename) as jsonfile:
         jsondata = json.load(jsonfile)          # read json
         Zip_Code = jsondata['weather']['zipcode']
-        # PollenHeaders = jsondata['Headers']['PollenHeaders']
+        RainHeaders = jsondata['Headers']['RainHeaders']
 
     # URL_weathercom = "https://weather.com/forecast/agriculture/l/" + Zip_Code + ":4:US"
     # response = requests.get(URL_weathercom)
@@ -51,26 +51,62 @@ try:
     # html_data = html_data[1].split(";window.experience={")
     # # print(html_data[0])
     # rain_data = json.loads(html_data[0])
+    # prog = re.compile("<div class=\"lifestyle-precip-soil\">[A-Za-z ]*</div>")
+    # # See if the pattern matches
+    # result_past = prog.findall(html_data)
+    # print(result_past)
+
     rain_data = get_rain_json("agriculture", Zip_Code)
-    print(rain_data["dal"]["DailyForecast"]["geocode:38.95,-77.02:language:en-US:units:e"]["data"]["vt1dailyForecast"][0]["day"].get("precipAmt"))
-    for i in rain_data["dal"]["DailyForecast"]["geocode:38.95,-77.02:language:en-US:units:e"]["data"]["vt1dailyForecast"]:
-        print(i["day"]["precipAmt"], i["night"]["precipAmt"])
-    isodate = weather_date_only([rain_data["dal"]["FarmersAlmanac"]["language:en_US:location:20011:4:US"]["data"]["FarmingAlmanacRecordHdr"]["isoDate"]])
-    prevdayprecip = (rain_data["dal"]["FarmersAlmanac"]["language:en_US:location:20011:4:US"]["data"]["FarmingAlmanacRecordData"]["ReportedConditions"]["prevDayPrecipIn"])
-    prevdaylow = (rain_data["dal"]["FarmersAlmanac"]["language:en_US:location:20011:4:US"]["data"]["FarmingAlmanacRecordData"]["ReportedConditions"]["prevDayLowF"])
-    prevdayhi = (rain_data["dal"]["FarmersAlmanac"]["language:en_US:location:20011:4:US"]["data"]["FarmingAlmanacRecordData"]["ReportedConditions"]["prevDayHighF"])
-    sevendayprecip = (rain_data["dal"]["FarmersAlmanac"]["language:en_US:location:20011:4:US"]["data"]["FarmingAlmanacRecordData"]["ReportedConditions"]["sevenDayPrecipIn"])
-    sevendaylow = (rain_data["dal"]["FarmersAlmanac"]["language:en_US:location:20011:4:US"]["data"]["FarmingAlmanacRecordData"]["ReportedConditions"]["sevenDayLowF"])
-    sevendayhi = (rain_data["dal"]["FarmersAlmanac"]["language:en_US:location:20011:4:US"]["data"]["FarmingAlmanacRecordData"]["ReportedConditions"]["sevenDayHighF"])
-    monthprecip = (rain_data["dal"]["FarmersAlmanac"]["language:en_US:location:20011:4:US"]["data"]["FarmingAlmanacRecordData"]["ReportedConditions"]["mtdPrecipIn"])
-    monthlow = (rain_data["dal"]["FarmersAlmanac"]["language:en_US:location:20011:4:US"]["data"]["FarmingAlmanacRecordData"]["ReportedConditions"]["mtdLowF"])
-    monthhi = (rain_data["dal"]["FarmersAlmanac"]["language:en_US:location:20011:4:US"]["data"]["FarmingAlmanacRecordData"]["ReportedConditions"]["mtdHighF"])
+    print(type(rain_data))
+    # print(rain_data[0]["dal"]["DailyForecast"]["geocode:38.95,-77.02:language:en-US:units:e"]["data"]["vt1dailyForecast"][0]["day"].get("precipAmt"))
+    rain_forecast_day = []
+    rain_forecast_night = []
+    for i in rain_data[0]["dal"]["DailyForecast"]["geocode:38.95,-77.02:language:en-US:units:e"]["data"]["vt1dailyForecast"]:
+        rain_forecast_day.append(i["day"]["precipAmt"])
+        rain_forecast_night.append(i["night"]["precipAmt"])
+    print(rain_forecast_day)
+    print(rain_forecast_night)
 
-    print(isodate, prevdayprecip, prevdaylow, prevdayhi, sevendayprecip, sevendaylow, sevendayhi, monthprecip, monthlow, monthhi)
-    AllData = str(isodate) + "," + str(prevdayprecip) + "," + str(prevdaylow) + "," + str(prevdayhi) + "," + str(sevendayprecip) + "," + str(sevendaylow) + "," + str(sevendayhi) + "," + str(monthprecip) + "," + str(monthlow) + "," + str(monthhi)
+    isodate = weather_date_only([rain_data[0]["dal"]["FarmersAlmanac"]["language:en_US:location:{}:4:US".format(Zip_Code)]["data"]["FarmingAlmanacRecordHdr"]["isoDate"]])
+    prevdayprecip = (rain_data[0]["dal"]["FarmersAlmanac"]["language:en_US:location:{}:4:US".format(Zip_Code)]["data"]["FarmingAlmanacRecordData"]["ReportedConditions"]["prevDayPrecipIn"])
+    prevdaylow = (rain_data[0]["dal"]["FarmersAlmanac"]["language:en_US:location:{}:4:US".format(Zip_Code)]["data"]["FarmingAlmanacRecordData"]["ReportedConditions"]["prevDayLowF"])
+    prevdayhi = (rain_data[0]["dal"]["FarmersAlmanac"]["language:en_US:location:{}:4:US".format(Zip_Code)]["data"]["FarmingAlmanacRecordData"]["ReportedConditions"]["prevDayHighF"])
+    sevendayprecip = (rain_data[0]["dal"]["FarmersAlmanac"]["language:en_US:location:{}:4:US".format(Zip_Code)]["data"]["FarmingAlmanacRecordData"]["ReportedConditions"]["sevenDayPrecipIn"])
+    sevendaylow = (rain_data[0]["dal"]["FarmersAlmanac"]["language:en_US:location:{}:4:US".format(Zip_Code)]["data"]["FarmingAlmanacRecordData"]["ReportedConditions"]["sevenDayLowF"])
+    sevendayhi = (rain_data[0]["dal"]["FarmersAlmanac"]["language:en_US:location:{}:4:US".format(Zip_Code)]["data"]["FarmingAlmanacRecordData"]["ReportedConditions"]["sevenDayHighF"])
+    monthprecip = (rain_data[0]["dal"]["FarmersAlmanac"]["language:en_US:location:{}:4:US".format(Zip_Code)]["data"]["FarmingAlmanacRecordData"]["ReportedConditions"]["mtdPrecipIn"])
+    monthlow = (rain_data[0]["dal"]["FarmersAlmanac"]["language:en_US:location:{}:4:US".format(Zip_Code)]["data"]["FarmingAlmanacRecordData"]["ReportedConditions"]["mtdLowF"])
+    monthhi = (rain_data[0]["dal"]["FarmersAlmanac"]["language:en_US:location:{}:4:US".format(Zip_Code)]["data"]["FarmingAlmanacRecordData"]["ReportedConditions"]["mtdHighF"])
 
-    # prog = re.compile("\"vt1pastPollen\"[A-Za-z0-9:\-\[\]\{\"\,\. ]*}")
-    # See if the pattern matches
+    # print(isodate, prevdayprecip, prevdaylow, prevdayhi, sevendayprecip, sevendaylow, sevendayhi, monthprecip, monthlow, monthhi)
+    AllData = str(isodate) + "," +      \
+        str(prevdayprecip) + "," +      \
+        str(prevdaylow) + "," +         \
+        str(prevdayhi) + "," +          \
+        str(sevendayprecip) + "," +     \
+        str(sevendaylow) + "," +        \
+        str(sevendayhi) + "," +         \
+        str(monthprecip) + "," +        \
+        str(monthlow) + "," +           \
+        str(monthhi) + "," +            \
+        str(rain_data[1]) + "," +       \
+        str(rain_forecast_day) + "," +  \
+        str(rain_forecast_night) + "\n"
+    AllData = AllData.replace("[", "")
+    AllData = AllData.replace("]", "")
+    AllData = AllData.replace("'", "")
+    AllData = AllData.replace(" ", "")
+    print(AllData)
+
+    PrecipSummary = str(isodate) + "," +      \
+        "ystr:" + str(prevdayprecip) + "," +             \
+        "7day:" + str(sevendayprecip) + "," +            \
+        "mnth:" + str(monthprecip) + "," +               \
+        str(rain_data[1]) + "\n"
+    print(PrecipSummary)
+
+    # prog = re.compile("<div class=\"lifestyle-precip-soil\">[A-Za-z ]*</div>")
+    # # See if the pattern matches
     # result_past = prog.findall(html_data)
     # print(result_past)
 
@@ -194,15 +230,16 @@ try:
     # AllData = AllData.replace(" ", "")
     # print(AllData)
 
-    # try:
-    #     open(OUTPUTFILE_RAIN, 'r')
-    #     print("File already exists")
-    # except:
-    #     print("File does not exist")
-    #     write_file(OUTPUTFILE_RAIN, 'w', RainHeaders)
+    try:
+        open(OUTPUTFILE_RAIN, 'r')
+        print("File already exists")
+    except:
+        print("File does not exist")
+        write_file(OUTPUTFILE_RAIN, 'w', RainHeaders)
 
     # write_file(OUTPUTFILE_RAIN, 'a', RainHeaders)       # Useful for testing
     write_file(OUTPUTFILE_RAIN, 'a', AllData)
+    IFTTTmsg(PrecipSummary)
 
 except:
     IFTTTmsg('Pollen Exception')
