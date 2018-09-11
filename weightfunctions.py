@@ -16,6 +16,7 @@ from requests.packages.urllib3.util.retry import Retry
 import json
 import time
 import logging
+import re
 
 # TO DO:
 # Plot daily all values
@@ -198,7 +199,14 @@ def get_weather():
                 else:
                     write_file("/home/pi/Documents/Code/000RAIN.txt", 'w', str(weather_data_open))
                     # print(weather_data_open["rain"].keys())
-                    rain = weather_data_open["rain"]["3h"]
+                    if weather_data_open["rain"].get("1h") is not None:
+                        # IFTTTmsg("Rain Code is 1hr")
+                        rain = weather_data_open["rain"]["1h"]
+                    elif weather_data_open["rain"].get("3h") is not None:
+                        IFTTTmsg("Rain Code is 3hr")
+                        rain = weather_data_open["rain"]["3h"]
+                    else:
+                        IFTTTmsg(str(weather_data_open["rain"].keys()))
                     # print(rain)
                 weather_output = weather_output + str(rain) + ","
                 if weather_data_open.get("snow") is None:
@@ -207,7 +215,14 @@ def get_weather():
                 else:
                     write_file("/home/pi/Documents/Code/000SNOW.txt", 'w', str(weather_data_open))
                     # print(weather_data_open["snow"].keys())
-                    snow = weather_data_open["snow"]["3h"]
+                    if weather_data_open["snow"].get("1h") is not None:
+                        # IFTTTmsg("Snow Code is 1hr")
+                        snow = weather_data_open["snow"]["1h"]
+                    elif weather_data_open["snow"].get("3h") is not None:
+                        IFTTTmsg("Snow Code is 3hr")
+                        snow = weather_data_open["snow"]["3h"]
+                    else:
+                        IFTTTmsg(str(weather_data_open["snow"].keys()))
                     # print(snow)
                 weather_output = weather_output + str(snow) + ","
                 if weather_data_open.get("visibility") is None:
@@ -547,8 +562,8 @@ def get_rain_json(forecast, zipcode):
     # print(response.text)
     html_data = response.text
     write_file(TEMP_FILEPATH, 'w', html_data)
-    html_data = html_data.split("window.__data=")
-    # print(data[1])
-    html_data = html_data[1].split(";window.experience={")
-    # print(html_data[0])
-    return json.loads(html_data[0])
+
+    prog = re.compile("<div class=\"lifestyle-precip-soil\">[A-Za-z ]*</div>")
+    # See if the pattern matches
+    result_past = prog.findall(html_data)
+    # print(result_pas
