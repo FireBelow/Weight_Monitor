@@ -566,4 +566,19 @@ def get_rain_json(forecast, zipcode):
     prog = re.compile("<div class=\"lifestyle-precip-soil\">[A-Za-z ]*</div>")
     # See if the pattern matches
     result_past = prog.findall(html_data)
-    # print(result_pas
+    # print(result_past)
+    soil_moisture = []
+    for i in result_past:
+        soil_moisture.append(i.split("<div class=\"lifestyle-precip-soil\">")[1])
+    result_past = soil_moisture
+    soil_moisture = []
+    for i in result_past:
+        soil_moisture.append(i.split("</div>")[0])
+    print(soil_moisture)
+
+    html_data = html_data.split("window.__data=")
+    # print(data[1])
+    html_data = html_data[1].split(";window.experience={")
+    # print(html_data[0])
+
+    return [json.loads(html_data[0]), soil_moisture]

@@ -57,6 +57,7 @@ try:
     # print(result_past)
 
     rain_data = get_rain_json("agriculture", Zip_Code)
+    # print(rain_data)
     print(type(rain_data))
     # print(rain_data[0]["dal"]["DailyForecast"]["geocode:38.95,-77.02:language:en-US:units:e"]["data"]["vt1dailyForecast"][0]["day"].get("precipAmt"))
     rain_forecast_day = []
