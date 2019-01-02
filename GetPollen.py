@@ -52,6 +52,43 @@ try:
     result_past = prog.findall(html_data)
     # print(result_past)
 
+    # Get All pollen history first in case of errors with other sections
+    # "vt1pastPollen":null}     #weekend null readings
+    # print("History " + str(result_past[1]))
+    prog = re.compile("\:null\}")
+    if bool(prog.findall(result_past[1])):
+        print("null found: weekend no data")
+        pollen_history_reportDate = ""
+        pollen_history_tree = ""
+        pollen_history_grass = ""
+        pollen_history_weed = ""
+        pollen_history_mold = ""
+        pollen_history_pollen = ""
+    else:
+        data = result_past[1].split(":{")
+        # print(data)
+        data = "{" + data[1]
+        # print(data)
+        pollen_history = json.loads(data)
+        # pollen_history = dict(eval(data))
+        # print(pollen_history)
+        # print(pollen_history.keys())
+        pollen_history_reportDate = pollen_history["reportDate"]
+        pollen_history_reportDate = weather_date_only(pollen_history_reportDate)
+        # print(pollen_history_reportDate)
+        print("History: Tree, Grass, Weed, Mold, Pollen")
+        pollen_history_tree = pollen_history["tree"]
+        print(pollen_history_tree)
+        pollen_history_grass = pollen_history["grass"]
+        print(pollen_history_grass)
+        pollen_history_weed = pollen_history["weed"]
+        print(pollen_history_weed)
+        pollen_history_mold = pollen_history["mold"]
+        print(pollen_history_mold)
+        pollen_history_pollen = pollen_history["pollen"]
+        print(len(pollen_history_pollen))     #get array length
+        print(pollen_history_pollen)
+
     # Get Yesterday Pollen data
     # "vt1pastPollen":{"reportDate":["2018-03-16T12:44:20.000-04:00"],"tree":[2],"grass":[0],"weed":[0],"mold":[1],"pollen":[25]}}
     # print("Yesterday " + str(result_past[0]))        # pollen data for yesterday
@@ -86,37 +123,6 @@ try:
         pollen_yesterday_pollen = pollen_yesterday["pollen"]
         # print(pollen_yesterday_pollen)
         print("Yesterday ", pollen_yesterday_reportDate, pollen_yesterday_tree, pollen_yesterday_grass, pollen_yesterday_weed, pollen_yesterday_mold, pollen_yesterday_pollen)
-
-    # All pollen history
-    # "vt1pastPollen":null}     #weekend null readings
-    # print("History " + str(result_past[1]))
-    prog = re.compile("\:null\}")
-    if bool(prog.findall(result_past[1])):
-        print("null found: weekend no data")
-    else:
-        data = result_past[1].split(":{")
-        # print(data)
-        data = "{" + data[1]
-        # print(data)
-        pollen_history = json.loads(data)
-        # pollen_history = dict(eval(data))
-        # print(pollen_history)
-        # print(pollen_history.keys())
-        pollen_history_reportDate = pollen_history["reportDate"]
-        pollen_history_reportDate = weather_date_only(pollen_history_reportDate)
-        # print(pollen_history_reportDate)
-        print("History: Tree, Grass, Weed, Mold, Pollen")
-        pollen_history_tree = pollen_history["tree"]
-        print(pollen_history_tree)
-        pollen_history_grass = pollen_history["grass"]
-        print(pollen_history_grass)
-        pollen_history_weed = pollen_history["weed"]
-        print(pollen_history_weed)
-        pollen_history_mold = pollen_history["mold"]
-        print(pollen_history_mold)
-        pollen_history_pollen = pollen_history["pollen"]
-        print(len(pollen_history_pollen))     #get array length
-        print(pollen_history_pollen)
 
     # Get Pollen Forecast
     # "vt1idxPollenDayPart":{"day":{"fcstValid":[1521370800,1521457200,1521543600,1521630000,1521716400,1521802800,1521889200,1521975600,1522062000,1522148400,1522234800,1522321200,1522407600,1522494000,1522580400],"fcstValidLocal":["2018-03-18T07:00:00-0400","2018-03-19T07:00:00-0400","2018-03-20T07:00:00-0400","2018-03-21T07:00:00-0400","2018-03-22T07:00:00-0400","2018-03-23T07:00:00-0400","2018-03-24T07:00:00-0400","2018-03-25T07:00:00-0400","2018-03-26T07:00:00-0400","2018-03-27T07:00:00-0400","2018-03-28T07:00:00-0400","2018-03-29T07:00:00-0400","2018-03-30T07:00:00-0400","2018-03-31T07:00:00-0400","2018-04-01T07:00:00-0400"],"dayInd":["D","D","D","D","D","D","D","D","D","D","D","D","D","D","D"],"num":[1,3,5,7,9,11,13,15,17,19,21,23,25,27,29],"daypartName":["Today","Tomorrow","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday"],"grassPollenIndex":[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],"grassPollenCategory":["None","None","None","None","None","None","None","None","None","None","None","None","None","None","None"],"treePollenIndex":[2,2,0,0,1,2,1,1,2,1,0,0,1,1,1],"treePollenCategory":["Moderate","Moderate","None","None","Low","Moderate","Low","Low","Moderate","Low","None","None","Low","Low","Low"],"ragweedPollenIndex":[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],"ragweedPollenCategory":["None","None","None","None","None","None","None","None","None","None","None","None","None","None","None"]},"night"
@@ -171,6 +177,10 @@ try:
     AllData = AllData.replace("'", "")
     AllData = AllData.replace(" ", "")
     print(AllData)
+
+    if not os.path.isfile(OUTPUTFILE_POLLEN):
+        print("Create new file")
+        write_file(OUTPUTFILE_POLLEN, 'w', PollenHeaders)        # create new file with headers
 
     try:
         open(OUTPUTFILE_POLLEN, 'r')

@@ -56,18 +56,12 @@ try:
     # result_past = prog.findall(html_data)
     # print(result_past)
 
+    # Get All Rain Data
     rain_data = get_rain_json("agriculture", Zip_Code)
     # print(rain_data)
     print(type(rain_data))
-    # print(rain_data[0]["dal"]["DailyForecast"]["geocode:38.95,-77.02:language:en-US:units:e"]["data"]["vt1dailyForecast"][0]["day"].get("precipAmt"))
-    rain_forecast_day = []
-    rain_forecast_night = []
-    for i in rain_data[0]["dal"]["DailyForecast"]["geocode:38.95,-77.02:language:en-US:units:e"]["data"]["vt1dailyForecast"]:
-        rain_forecast_day.append(i["day"]["precipAmt"])
-        rain_forecast_night.append(i["night"]["precipAmt"])
-    print(rain_forecast_day)
-    print(rain_forecast_night)
 
+    # Get Rain History Data
     isodate = weather_date_only([rain_data[0]["dal"]["FarmersAlmanac"]["language:en_US:location:{}:4:US".format(Zip_Code)]["data"]["FarmingAlmanacRecordHdr"]["isoDate"]])
     prevdayprecip = (rain_data[0]["dal"]["FarmersAlmanac"]["language:en_US:location:{}:4:US".format(Zip_Code)]["data"]["FarmingAlmanacRecordData"]["ReportedConditions"]["prevDayPrecipIn"])
     prevdaylow = (rain_data[0]["dal"]["FarmersAlmanac"]["language:en_US:location:{}:4:US".format(Zip_Code)]["data"]["FarmingAlmanacRecordData"]["ReportedConditions"]["prevDayLowF"])
@@ -78,6 +72,16 @@ try:
     monthprecip = (rain_data[0]["dal"]["FarmersAlmanac"]["language:en_US:location:{}:4:US".format(Zip_Code)]["data"]["FarmingAlmanacRecordData"]["ReportedConditions"]["mtdPrecipIn"])
     monthlow = (rain_data[0]["dal"]["FarmersAlmanac"]["language:en_US:location:{}:4:US".format(Zip_Code)]["data"]["FarmingAlmanacRecordData"]["ReportedConditions"]["mtdLowF"])
     monthhi = (rain_data[0]["dal"]["FarmersAlmanac"]["language:en_US:location:{}:4:US".format(Zip_Code)]["data"]["FarmingAlmanacRecordData"]["ReportedConditions"]["mtdHighF"])
+
+    # Get Forecast Data
+    # print(rain_data[0]["dal"]["DailyForecast"]["geocode:38.95,-77.02:language:en-US:units:e"]["data"]["vt1dailyForecast"][0]["day"].get("precipAmt"))
+    rain_forecast_day = []
+    rain_forecast_night = []
+    for i in rain_data[0]["dal"]["DailyForecast"]["geocode:38.95,-77.02:language:en-US:units:e"]["data"]["vt1dailyForecast"]:
+        rain_forecast_day.append(i["day"]["precipAmt"])
+        rain_forecast_night.append(i["night"]["precipAmt"])
+    print(rain_forecast_day)
+    print(rain_forecast_night)
 
     # print(isodate, prevdayprecip, prevdaylow, prevdayhi, sevendayprecip, sevendaylow, sevendayhi, monthprecip, monthlow, monthhi)
     AllData = str(isodate) + "," +      \
@@ -230,6 +234,10 @@ try:
     # AllData = AllData.replace("'", "")
     # AllData = AllData.replace(" ", "")
     # print(AllData)
+
+    if not os.path.isfile(OUTPUTFILE_RAIN):
+        print("Create new file")
+        write_file(OUTPUTFILE_RAIN, 'w', RainHeaders)        # create new file with headers
 
     try:
         open(OUTPUTFILE_RAIN, 'r')
