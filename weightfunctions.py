@@ -71,8 +71,8 @@ def write_file(FILENAME, FILEOPERATION, SAVEDDATA):
     logger = logging.getLogger("WeightMonitor.WeightFunctions.add")
     logger.info("writing file")
 
-    with open(FILENAME, FILEOPERATION) as outputfile:       #recommended way to open files to ensure the file closes properly
-        outputfile.write(SAVEDDATA)
+    with open(FILENAME, FILEOPERATION, encoding='utf-8') as outputfile:       #recommended way to open files to ensure the file closes properly
+        outputfile.write(str(SAVEDDATA))
 
     return
 

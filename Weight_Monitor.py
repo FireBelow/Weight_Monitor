@@ -9,7 +9,7 @@ import RPi.GPIO as GPIO
 import datetime
 import time
 import Adafruit_DHT
-# import os.path
+import os.path
 import logging
 import json
 # from hx711 import HX711                             # import the class HX711
@@ -60,6 +60,12 @@ try:
         Headers = jsondata['Headers']['All']
         # print(Headers)
     # Headers = "DateTime,WBigMed,WSmlMed,BigTemp,BigHum,SmlTemp,SmlHum,WMain,WDesc,WTemp,WPressure,WHumid,WWindSpd,WWindDir,WRain,WSnow,WVisible,WClouds,WSunrise,WSunset,Solar,UV,Precip1hr,PrecipToday,RawReadB,WBigStd,RawReadS,WSmlStd,Notes\n"
+    
+    if not os.path.isfile(OUTPUTFILE):
+        print("Create new file")
+        write_file(OUTPUTFILE, 'w', Headers)        # create new file with headers
+        calculate()
+
     try:
         open(OUTPUTFILE, 'r')
         print("File already exists")
