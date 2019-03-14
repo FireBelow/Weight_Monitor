@@ -24,6 +24,9 @@ Graphs/
 *.sh
 
 #Ignore Other Files
+Archive/
+DeepLearning/
+ML/
 __pycache__/
 exclude/
 www/
