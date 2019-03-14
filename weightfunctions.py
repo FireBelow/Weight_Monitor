@@ -14,6 +14,7 @@ import requests
 from requests.adapters import HTTPAdapter
 from requests.packages.urllib3.util.retry import Retry
 import json
+import os.path
 import time
 import logging
 import re
@@ -64,6 +65,30 @@ def read_scale(READINGS, DATAPIN, CLOCKPIN):
 
     return data
 
+def file_exists_check(FILEPATH,ACTION,INITIAL_DATA=None):
+
+    '''Check if file in FILEPATH exists, then if a new file is needed create it, and save optional data (like file headers)
+       ACTION: 'check’ will just check if the file exists
+       ACTION: 'create’ will make a new file if one does not exist and write initial data if INITIAL_DATA is not blank'''
+
+    if os.path.isfile(FILEPATH):
+            print('File Exists')
+    else:
+        # file does not exist
+        if ACTION is 'check':
+            print('File Missing')
+        if ACTION is 'create':
+            # create new blank file
+            print('Create new file')
+            if INITIAL_DATA is None:
+                write_file(FILEPATH, 'w', None)        # create new file with no data
+                print('Blank File Created')
+            else:
+                write_file(FILEPATH, 'w', INITIAL_DATA)        # create new file with INITIAL_DATA written
+                print('File Created with Initial Data')
+
+    return
+
 
 def write_file(FILENAME, FILEOPERATION, SAVEDDATA):
     '''This writes data to the file specified'''
@@ -71,7 +96,7 @@ def write_file(FILENAME, FILEOPERATION, SAVEDDATA):
     logger = logging.getLogger("WeightMonitor.WeightFunctions.add")
     logger.info("writing file")
 
-    with open(FILENAME, FILEOPERATION, encoding='utf-8') as outputfile:       #recommended way to open files to ensure the file closes properly
+    with open(FILENAME, FILEOPERATION, encoding='utf-8') as outputfile:       # recommended way to open files to ensure the file closes properly
         outputfile.write(str(SAVEDDATA))
 
     return
@@ -108,8 +133,10 @@ def get_weather():
             # print(jsondata)
             # json.dump(newdata, jsonfile)           #write json
             Zip_Code = jsondata['weather']['zipcode']
+            Latitude = jsondata['weather']['lat']
+            Longitude = jsondata['weather']['lon']
             WeatherKeyWOpen = jsondata['weather']['openkey']
-            WeatherKeyWUnder = jsondata['weather']['underkey']
+            # WeatherKeyWUnder = jsondata['weather']['underkey']
             # print(Zip_Code)
             # print(WeatherKeyWOpen)
             # print(WeatherKeyWUnder)
@@ -260,55 +287,92 @@ def get_weather():
                 # print(weather_output)
                 break
 
-        print("Get UnderWeather")
-        logger.info("Get UnderWeather")
-        weather_URL_under = "http://api.wunderground.com/api/" + WeatherKeyWUnder + "/conditions/q/pws:KDCWASHI163.json"
-        # print(weather_URL_under)
-        weather_data_under = {}
-        for i in range(3):
-            WeatherStringUnder=requests.get(weather_URL_under, timeout=15)
-            # print(CurrentWeatherString.json())
-            # print("Parse UnderWeather")
-            weather_data_under = json.loads(WeatherStringUnder.text)
-            # print(weather_data)
-            # print(weather_data["current_observation"].keys())
+        # print("Get UnderWeather")
+        # logger.info("Get UnderWeather")
+        # weather_URL_under = "http://api.wunderground.com/api/" + WeatherKeyWUnder + "/conditions/q/pws:KDCWASHI255.json"
+        # # print(weather_URL_under)
+        # weather_data_under = {}
+        # for i in range(3):
+        #     WeatherStringUnder = requests.get(weather_URL_under, timeout=15)
+        #     # print(WeatherStringUnder.json())
+        #     # print("Parse UnderWeather")
+        #     weather_data_under = json.loads(WeatherStringUnder.text)
+        #     # print(weather_data)
+        #     # print(weather_data_under["current_observation"].keys())
 
-            if weather_data_under:
-                # print("WeatherUnder data exists")
-                if weather_data_under.get("current_observation") is None:
-                    solarradiation = ""
+        #     if weather_data_under:
+        #         # print("WeatherUnder data exists")
+        #         if weather_data_under.get("current_observation") is None:
+        #             solarradiation = ""
+        #             UV = ""
+        #             precip_1hr_in = ""
+        #             precip_today_in = ""
+        #         else:
+        #             if weather_data_under["current_observation"].get("solarradiation") is None:
+        #                 solarradiation = ""
+        #             else:
+        #                 solarradiation = weather_data_under["current_observation"]["solarradiation"]
+        #                 # print(solarradiation)
+        #             if weather_data_under["current_observation"].get("UV") is None:
+        #                 UV = ""
+        #             else:
+        #                 UV = weather_data_under["current_observation"]["UV"]
+        #                 # print(UV)
+        #             if weather_data_under["current_observation"].get("precip_1hr_in") is None:
+        #                 precip_1hr_in = ""
+        #             else:
+        #                 precip_1hr_in = weather_data_under["current_observation"]["precip_1hr_in"]
+        #                 # print(precip_1hr_in)
+        #             if weather_data_under["current_observation"].get("precip_today_in") is None:
+        #                 precip_today_in = ""
+        #             else:
+        #                 precip_today_in = weather_data_under["current_observation"]["precip_today_in"]
+        #                 # print(precip_today_in)
+        #             if weather_data_under["current_observation"].get("observation_time") is None:
+        #                 observation_time = ""
+        #             else:
+        #                 observation_time = weather_data_under["current_observation"]["observation_time"]
+        #                 print(observation_time)
+        #                 # DONT JUST ADD THIS weather_output = "," + weather_output + str(observation_time)
+        #         weather_output = weather_output + str(solarradiation) + "," + str(UV) + "," + str(precip_1hr_in) + "," + str(precip_today_in)
+        #         break
+
+        # Previous Underground Weather Fields
+        solarradiation = ""
+        UV = ""
+        precip_1hr_in = ""
+        precip_today_in = ""
+
+        # Get UV Data from Open Weather
+        print("Get UV OpenWeather Reading")
+        logger.info("Get UV OpenWeather")
+        weather_URL_open_UV = "http://api.openweathermap.org/data/2.5/uvi?lat=" + Latitude + "&lon=" + Longitude + "&appid=" + WeatherKeyWOpen
+        # print(weather_URL_open_UV)
+        weather_data_open_UV = {}
+        for i in range(3):
+            WeatherStringOpen_UV = requests.get(weather_URL_open_UV, timeout=15)
+            # print(WeatherStringOpen_UV.json())
+            if WeatherStringOpen_UV.status_code != 200:
+                print("Bad web response " + str(WeatherStringOpen_UV.status_code))
+                IFTTTmsg("Bad web response " + str(WeatherStringOpen_UV.status_code))
+                # Retry
+                WeatherStringOpen_UV = requests.get(weather_URL_open_UV, timeout=15)
+            weather_data_open_UV = json.loads(WeatherStringOpen_UV.text)
+            # print(weather_data_open_UV)
+
+            if weather_data_open_UV:
+                if weather_data_open_UV.get("cod"):
+                    print("UV Error: {}".format(weather_data_open_UV["cod"]))
+                    print("UV_msg: {}".format(weather_data_open_UV["message"]))
+                    break
+                # print("WeatherOpen data exists")
+                if weather_data_open_UV.get("value") is "None":
                     UV = ""
-                    precip_1hr_in = ""
-                    precip_today_in = ""
                 else:
-                    if weather_data_under["current_observation"].get("solarradiation") is None:
-                        solarradiation = ""
-                    else:
-                        solarradiation = weather_data_under["current_observation"]["solarradiation"]
-                        # print(solarradiation)
-                    if weather_data_under["current_observation"].get("UV") is None:
-                        UV = ""
-                    else:
-                        UV = weather_data_under["current_observation"]["UV"]
-                        # print(UV)
-                    if weather_data_under["current_observation"].get("precip_1hr_in") is None:
-                        precip_1hr_in = ""
-                    else:
-                        precip_1hr_in = weather_data_under["current_observation"]["precip_1hr_in"]
-                        # print(precip_1hr_in)
-                    if weather_data_under["current_observation"].get("precip_today_in") is None:
-                        precip_today_in = ""
-                    else:
-                        precip_today_in = weather_data_under["current_observation"]["precip_today_in"]
-                        # print(precip_today_in)
-                    if weather_data_under["current_observation"].get("observation_time") is None:
-                        observation_time = ""
-                    else:
-                        observation_time = weather_data_under["current_observation"]["observation_time"]
-                        print(observation_time)
-                        # DONT JUST ADD THIS weather_output = "," + weather_output + str(observation_time)
-                weather_output = weather_output + str(solarradiation) + "," + str(UV) + "," + str(precip_1hr_in) + "," + str(precip_today_in)
-                break
+                    UV = weather_data_open_UV["value"]
+
+        # print(weather_output)
+        weather_output = weather_output + str(solarradiation) + "," + str(UV) + "," + str(precip_1hr_in) + "," + str(precip_today_in)
 
         # print(weather_output)
         return str(weather_output)
@@ -320,7 +384,7 @@ def get_weather():
         write_file("/home/pi/Documents/Code/000WEATHERERROR.txt", 'a', str(weather_data_open) + "\n")
         # if weather_data_under:
         # print("weather_data_under not blank")
-        write_file("/home/pi/Documents/Code/000WEATHERERROR.txt", 'a', str(weather_data_under) + "\n")
+        # write_file("/home/pi/Documents/Code/000WEATHERERROR.txt", 'a', str(weather_data_under) + "\n")
         raise
         # print("Exception")
 
