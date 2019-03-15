@@ -391,6 +391,154 @@ def get_weather():
     finally:
         print("All Done!")
 
+def get_open_forecast():
+    # CurrentDateTime,Day1-00,Day1-03,Day1-06,Day1-09,Day1-12,Day1-15,Day1-18,Day1-21,Day1-24,Day2-00,Day2-03,Day2-06,Day2-09,Day2-12,Day2-15,Day2-18,Day2-21,Day2-24,Day3-00,Day3-03,Day3-06,Day3-09,Day3-12,Day3-15,Day3-18,Day3-21,Day3-24,Day4-00,Day4-03,Day4-06,Day4-09,Day4-12,Day4-15,Day4-18,Day4-21,Day4-24,Day5-00,Day5-03,Day5-06,Day5-09,Day5-12,Day5-15,Day5-18,Day5-21,Day5-24,Day6-00,Day6-03,Day6-06,Day6-09,Day6-12,Day6-15,Day6-18,Day6-21,Day6-24,
+    # main
+    # temp = FTemp
+    # temp_min
+    # temp_max
+    # pressure = FPressure
+    # sea_level
+    # grnd_level
+    # humidity = FHumid
+    # weather
+    # main = FMain
+    # description = FDesc
+    # clouds = FClouds
+    # wind
+    # speed = FWindSpd
+    # deg = FWindDir
+    # rain = FRain
+    # snow = FSnow
+    # dt_txt = Frcst_period
+
+    logger = logging.getLogger('WeightMonitor.WeightFunctions.add')
+    logger.info('getting weather data')
+
+    jsonfilename = '/home/pi/Documents/Code/private.json'
+    with open(jsonfilename) as jsonfile:
+        jsondata = json.load(jsonfile)          # read json
+        # print(jsondata)
+        # json.dump(newdata, jsonfile)           #write json
+        # Zip_Code = jsondata['weather']['zipcode']
+        Latitude = jsondata['weather']['lat']
+        Longitude = jsondata['weather']['lon']
+        WeatherKeyWOpen = jsondata['weather']['openkey']
+        ISO_DATETIME_FORMAT = "%Y-%m-%d %H:%M:%S"
+        # WeatherKeyWUnder = jsondata['weather']['underkey']
+        # print(Zip_Code)
+        # print(WeatherKeyWOpen)
+        # print(WeatherKeyWUnder)
+
+    print('Get OpenWeather Forecast')
+    logger.info('Get OpenWeather')
+    weather_URL_open_forecast = 'http://api.openweathermap.org/data/2.5/forecast?lat=' + Latitude + '&lon=' + Longitude + '&appid=' + WeatherKeyWOpen + '&units=imperial'
+    # print(weather_URL_open_forecast)
+    weather_data_open_forecast = {}
+    for i in range(3):
+        WeatherStringOpen_forecast = requests.get(weather_URL_open_forecast, timeout=15)
+        # print(WeatherStringOpen_forecast.json())
+        if WeatherStringOpen_forecast.status_code != 200:
+            print('Bad web response ' + str(WeatherStringOpen_forecast.status_code))
+            IFTTTmsg('Bad web response ' + str(WeatherStringOpen_forecast.status_code))
+            # Retry
+            WeatherStringOpen_forecast = requests.get(weather_URL_open_forecast, timeout=15)
+        weather_data_open_forecast = json.loads(WeatherStringOpen_forecast.text)
+        # print(weather_data_open_forecast)
+        # print(weather_data_open_forecast.keys())
+        # print(weather_data_open_forecast['main'].keys())
+        # print(weather_data_open_forecast['weather'][0].keys())
+
+        if weather_data_open_forecast:
+            # print('WeatherOpen Forecast data exists')
+            # print(weather_data_open_forecast)
+            # cod_response = weather_data_open_forecast['cod']
+            # print(cod_response)
+            weather_forecast = {}
+            this_periods_data = {}
+            if weather_data_open_forecast.get('list') is not None:
+                i = 0
+                for threehours in weather_data_open_forecast['list']:
+                    print("Current 3h period: {}".format(threehours))
+                    # Get Other Weather Forecast Data
+                    if weather_data_open_forecast['list'][0].get('dt_txt') is not None:
+                        this_periods_data['Frcst_period'] = weather_data_open_forecast['list'][0]['dt_txt']
+                    else:
+                        this_periods_data['Frcst_period'] = ''
+                    if weather_data_open_forecast['list'][0].get('clouds') is not None:
+                        if weather_data_open_forecast['list'][0]['clouds'].get('all') is not None:
+                            this_periods_data['FClouds'] = weather_data_open_forecast['list'][0]['clouds']['all']
+                        else:
+                            this_periods_data['FClouds'] = weather_data_open_forecast['list'][0]['clouds']
+                    else:
+                            this_periods_data['FClouds'] = ''
+                    if weather_data_open_forecast['list'][0].get('wind') is not None:
+                        if weather_data_open_forecast['list'][0]['wind'].get('speed') is not None:
+                            this_periods_data['FWindSpd'] = weather_data_open_forecast['list'][0]['wind']['speed']
+                        else:
+                            this_periods_data['FWindSpd'] = ''
+                        if weather_data_open_forecast['list'][0]['wind'].get('deg') is not None:
+                            this_periods_data['FWindDir'] = weather_data_open_forecast['list'][0]['wind']['deg']
+                        else:
+                            this_periods_data['FWindDir'] = ''
+                    else:
+                        this_periods_data['FWindSpd'] = ''
+                        this_periods_data['FWindDir'] = ''
+                    if weather_data_open_forecast['list'][0].get('rain') is not None:
+                        print(weather_data_open_forecast['list'][0].get('rain'))
+                        if weather_data_open_forecast['list'][0]['rain'].get('3h') is not None:
+                            this_periods_data['FRain'] = weather_data_open_forecast['list'][0]['rain']['3h']
+                        else:
+                            this_periods_data['FRain'] = weather_data_open_forecast['list'][0]['rain']
+                    else:
+                        this_periods_data['FRain'] = ''
+                    if weather_data_open_forecast['list'][0].get('snow') is not None:
+                        if weather_data_open_forecast['list'][0]['snow'].get('3h') is not None:
+                            this_periods_data['FSnow'] = weather_data_open_forecast['list'][0]['snow']['3h']
+                        else:
+                            this_periods_data['FSnow'] = weather_data_open_forecast['list'][0]['snow']
+                    else:
+                        this_periods_data['FSnow'] = ''
+
+                    # Get Main Forecast Data
+                    main_data = {}
+                    weather_types = ['temp','pressure','humidity']
+                    if weather_data_open_forecast['list'][0].get('main') is not None:
+                        for weather_type in weather_types:
+                            if weather_data_open_forecast['list'][0]['main'].get(weather_type) is not None:
+                                main_data[weather_type] = weather_data_open_forecast['list'][0]['main'][weather_type]
+                            else:
+                                main_data[weather_type] = ''
+                        this_periods_data['FTemp'] = main_data['temp']
+                        this_periods_data['FPressure'] = main_data['pressure']
+                        this_periods_data['FHumid'] = main_data['humidity']
+
+                    # Get Descriptive Weather Forecast Data
+                    if weather_data_open_forecast['list'][0].get('weather') is not None:
+                        # print(len(weather_data_open_forecast['list'][0]['weather']))
+                        if len(weather_data_open_forecast['list'][0]['weather']) is 1:
+                            this_periods_data['FMain0'] = weather_data_open_forecast['list'][0]['weather'][0]['main']
+                            this_periods_data['FDesc0'] = weather_data_open_forecast['list'][0]['weather'][0]['description']
+                        else:
+
+                            this_periods_data['FMain1'] = weather_data_open_forecast['list'][0]['weather'][1]['main']
+                            this_periods_data['FDesc1'] = weather_data_open_forecast['list'][0]['weather'][1]['description']
+                    else:
+                        this_periods_data['FMain0'] = ''
+                        this_periods_data['FDesc0'] = ''
+                        this_periods_data['FMain1'] = ''
+                        this_periods_data['FDesc1'] = ''
+
+                    # [Frcst_period+','+FClouds+','+FWindSpd+','+FWindDir+','+FRain+','+FSnow+','+FTemp+','+FPressure+','+FHumid+','+FMain0+','+FDesc0+','+FMain1+','+FDesc1]
+                    print(this_periods_data)
+                    weather_forecast[i] = this_periods_data
+                    i = i + 1
+                Forecast = time.strftime(ISO_DATETIME_FORMAT)
+                periods = range(0, 39, 1)
+                for period in periods:
+                    Forecast = Forecast + ',' + str(weather_forecast[period])
+                print('Forcast: {}'.format(Forecast))
+    return str(Forecast)
 
 def IFTTTmsg(MSG):
     '''Send IFTTT message'''
@@ -476,6 +624,15 @@ def calculate():
         datatosave = ""
         headers = ""
         observationthreshold = (12 * 24) * 0.9  # 90% of observation every 5 min each hour times 24 hrs
+
+        jsonfilename = "/home/pi/Documents/Code/private.json"
+        with open(jsonfilename) as jsonfile:
+            jsondata = json.load(jsonfile)          # read json
+            # print(jsondata)
+            # json.dump(newdata, jsonfile)           #write json
+            Headers_yearly = jsondata['Headers']['All']
+            # print(Headers)
+        # Headers = "DateTime,WBigMed,WSmlMed,BigTemp,BigHum,SmlTemp,SmlHum,WMain,WDesc,WTemp,WPressure,WHumid,WWindSpd,WWindDir,WRain,WSnow,WVisible,WClouds,WSunrise,WSunset,Solar,UV,Precip1hr,PrecipToday,RawReadB,WBigStd,RawReadS,WSmlStd,Notes\n"
 
         print("Calculate Stats on Daily Readings")
         logger.info("Read CSV")
@@ -578,14 +735,14 @@ def calculate():
             print("File already exists")
         except:
             print("File does not exist")
-            write_file(outputfilepath_Yearly_csv, 'w', headers)
+            write_file(outputfilepath_Yearly_csv, 'w', Headers_yearly)
 
         try:
             open(outputfilepath_Yearly_xlsx, 'r')
             print("File already exists")
         except:
             print("File does not exist")
-            write_file(outputfilepath_Yearly_xlsx, 'w', headers)
+            write_file(outputfilepath_Yearly_xlsx, 'w', Headers_yearly)
 
         logger.info("Write calc data to file")
         # write_file(outputfilepath_Daily, 'a', headers)       #useful for testing header changes
