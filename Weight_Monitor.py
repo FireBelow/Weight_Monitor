@@ -60,7 +60,7 @@ try:
         Headers = jsondata['Headers']['All']
         # print(Headers)
     # Headers = "DateTime,WBigMed,WSmlMed,BigTemp,BigHum,SmlTemp,SmlHum,WMain,WDesc,WTemp,WPressure,WHumid,WWindSpd,WWindDir,WRain,WSnow,WVisible,WClouds,WSunrise,WSunset,Solar,UV,Precip1hr,PrecipToday,RawReadB,WBigStd,RawReadS,WSmlStd,Notes\n"
-    
+
     if not os.path.isfile(OUTPUTFILE):
         print("Create new file")
         write_file(OUTPUTFILE, 'w', Headers)        # create new file with headers
