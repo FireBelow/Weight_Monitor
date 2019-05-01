@@ -261,6 +261,44 @@ try:
     SMLdata = SMLdata + SMLoffset
     # print(round(np.median(SMLdata), 2))
 
+    # Dummy HX711 for calibration
+    DUMMY_DATA_PIN = 6
+    DUMMY_CLOCK_PIN = 5
+    # print("Read DUMMY Scale")
+    DUMMYdata_raw = read_scale(READINGS=HX_NUM_READS, DATAPIN=DUMMY_DATA_PIN, CLOCKPIN=DUMMY_CLOCK_PIN)      # Read DUMMY scale
+    if np.std(DUMMYdata_raw) > HX_STDEV_THRESHOLD:
+        for i in range(2, RETRY_ATTEMPTS + 2):
+            print("Scale StDev is too high (" + str(round(np.std(DUMMYdata_raw), 2)) + "), reading again...")
+            DUMMYdata_raw1 = DUMMYdata_raw
+            time.sleep(2)
+            DUMMYdata_raw = read_scale(READINGS=HX_NUM_READS, DATAPIN=DUMMY_DATA_PIN, CLOCKPIN=DUMMY_CLOCK_PIN)        # Read DUMMY scale again
+            if np.std(DUMMYdata_raw) > HX_STDEV_THRESHOLD:
+                print("DUMMY Scale StDev is still too high")
+                if np.std(DUMMYdata_raw) < np.std(DUMMYdata_raw1):
+                    DUMMYdata_raw1 = DUMMYdata_raw
+                else:
+                    DUMMYdata_raw = DUMMYdata_raw1
+            else:
+                print("Better reading recorded after " + str(i) + " tries")
+                logger.info("DUMMY HX Retries: " + str(i))
+                Notes = Notes + "DUMMYHX Retries: " + str(i)
+                break
+        if i >= RETRY_ATTEMPTS:
+            logger.info(str(i) + " retries for DUMMYHX & stdev: " + str(round(np.std(DUMMYdata_raw), 2)))
+            IFTTTmsg(str(i) + " retries for DUMMYHX")
+            DUMMYdata_raw = DUMMYdata_raw1
+    else:
+        print("StDev is below threshold of " + str(HX_STDEV_THRESHOLD))
+    print("DUMMY Raw: {}".format(DUMMYdata_raw))
+    print(round(np.median(DUMMYdata_raw), 2), round(np.std(DUMMYdata_raw), 2))
+    DUMMYdata = 0.0001398789 * np.median(DUMMYdata_raw) + 208.9558945667      # convert raw to meaningful
+    print(round(np.median(DUMMYdata), 2))
+    # DUMMYoffset = -0.0033135985 * np.median(BIGhumidity) + 0.357458148      # temp calibration with fewer data points than big scale
+    DUMMYoffset = -0.0059644774 * np.median(BIGhumidity) + 0.2514229949      # humid calibration with fewer data points than big scale
+    # print(round(np.median(DUMMYoffset), 2))
+    DUMMYdata = DUMMYdata + DUMMYoffset
+    print("Dummy Data: {}".format(round(DUMMYdata, 2)))
+
     BigMedian = round(np.median(BIGdata), 2)
     SmlMedian = round(np.median(SMLdata), 2)
     BigTempMedian = round(np.median(BIGtemperature), 2)
@@ -272,6 +310,8 @@ try:
     BigRawStdev = round(np.std(BIGdata_raw), 1)
     SmlRaw = np.median(SMLdata_raw)
     SmlRawStdev = round(np.std(SMLdata_raw), 1)
+    DUMMYRaw = np.median(DUMMYdata_raw)
+    DUMMYRawStdev = round(np.std(DUMMYdata_raw), 1)
     # Notes
 
     def find_outliers(DailyLogFile):
@@ -327,6 +367,9 @@ try:
         + str(BigRawStdev) + COMMA                              \
         + str(SmlRaw) + COMMA                                   \
         + str(SmlRawStdev) + COMMA                              \
+        + str(DUMMYdata) + COMMA                                \
+        + str(DUMMYRaw) + COMMA                                 \
+        + str(DUMMYRawStdev) + COMMA                            \
         + Notes + "\n"
 
     # write_file(OUTPUTFILE, 'a', Headers)       #to update headers in the middle of the file
