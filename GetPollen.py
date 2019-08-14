@@ -22,6 +22,19 @@ from matplotlib.dates import DateFormatter      # , YEARLY, rrulewrapper, RRuleL
 import matplotlib.dates as dates
 
 try:
+    LogFileName = "/home/pi/Documents/Code/Log/Pollen.log"
+    logger = logging.getLogger(__name__)
+    logger.setLevel(logging.INFO)
+
+    # create the logging file handler
+    LogHandler = logging.FileHandler(LogFileName)
+    formatter = logging.Formatter('%(asctime)s-%(name)s-%(levelname)s-%(message)s')
+    LogHandler.setFormatter(formatter)
+
+    # # add handler to logger object
+    logger.addHandler(LogHandler)
+    logger.info("Program started")
+
     MINUS_ONE_DAY = datetime.timedelta(days=1)
     TODAY = datetime.datetime.now().date()
     print(TODAY, type(TODAY))
@@ -34,8 +47,8 @@ try:
     FILE_DATE_FORMAT = "%Y%m%d"
     OUTPUTFILE_POLLEN = "/home/pi/Documents/Code/" + str(YEAR) + "_Pollen.csv"
     jsonfilename = "/home/pi/Documents/Code/private.json"
-    TEMP_FILEPATH = "/home/pi/Documents/Code/temp.html"
-    POLLEN_DATADUMP_FILEPATH = "/home/pi/Documents/Code/pollen_dump.html"
+    TEMP_FILEPATH = "/home/pi/Documents/Code/temp/pollen_temp.html"
+    POLLEN_DATADUMP_FILEPATH = "/home/pi/Documents/Code/temp/pollen_dump.html"
     with open(jsonfilename) as jsonfile:
         jsondata = json.load(jsonfile)          # read json
         Zip_Code = jsondata['weather']['zipcode']
@@ -193,15 +206,16 @@ try:
     write_file(OUTPUTFILE_POLLEN, 'a', AllData)
 
 except:
-    IFTTTmsg('Pollen Exception')
     logging.exception("Pollen Exception")
-    with open(TEMP_FILEPATH, 'r') as outputfile: 
-        temp_data = outputfile.read()
-    write_file(POLLEN_DATADUMP_FILEPATH, 'a', temp_data)
+    logger.info("Exception Encountered", exc_info=True)
+    IFTTTmsg('Pollen Exception')
     raise
     # print("Exception")
 
 finally:
+    with open(TEMP_FILEPATH, 'r') as outputfile: 
+        temp_data = outputfile.read()
+    write_file(POLLEN_DATADUMP_FILEPATH, 'a', temp_data)
     # if os.path.exists(TEMP_FILEPATH):
     #     os.path.remove(TEMP_FILEPATH)
     print("Done")

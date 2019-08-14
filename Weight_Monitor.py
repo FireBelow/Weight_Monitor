@@ -26,7 +26,7 @@ from weightfunctions import read_scale, write_file, get_weather, IFTTTmsg, calcu
 
 try:
     LogFileName = "/home/pi/Documents/Code/Log/Monitor.log"
-    logger = logging.getLogger("WeightMonitor")
+    logger = logging.getLogger(__name__)
     logger.setLevel(logging.INFO)
 
     # create the logging file handler
@@ -100,7 +100,7 @@ try:
                 else:
                     problem_msg = "TempHum threshold error, read again"
                     print(problem_msg)
-                    logger.info(problem_msg)
+                    logger.info(problem_msg, exc_info=True)
                     # IFTTTmsg(problem_msg)
         return data_list
 
@@ -134,7 +134,7 @@ try:
                     BIGtemphum1 = BIGtemphum
             else:
                 print("Better reading recorded after " + str(i) + " tries")
-                logger.info("BigDHT Retries: " + str(i))
+                logger.info("BigDHT Retries: " + str(i), exc_info=True)
                 Notes = Notes + "BigDHT Retries: " + str(i)
                 break
         if i >= RETRY_ATTEMPTS:
@@ -154,11 +154,11 @@ try:
 
     # Check for abnormal values
     if np.median(BIGtemperature) > DHT_THRESHOLD_TEMP_MAX:
-        logger.info("Super high Big Temp: " + str(np.median(BIGtemperature)))
+        logger.info("Super high Big Temp: " + str(np.median(BIGtemperature)), exc_info=True)
         IFTTTmsg("Super high Big Temp")
         BIGtemperature = [np.nan]
     if np.median(BIGhumidity) > DHT_THRESHOLD_HUM_MAX:
-        logger.info("Super high Big Temp: " + str(np.median(BIGhumidity)))
+        logger.info("Super high Big Temp: " + str(np.median(BIGhumidity)), exc_info=True)
         IFTTTmsg("Super high Big Hum")
         BIGhumidity = [np.nan]
 
@@ -186,7 +186,7 @@ try:
 #        print('Failed to get reading. Try again!')
 
     HX_NUM_READS = 15
-    HX_STDEV_THRESHOLD = 2000
+    HX_STDEV_THRESHOLD = 1000
     BIG_DATA_PIN = 21
     BIG_CLOCK_PIN = 20
 
@@ -196,16 +196,20 @@ try:
             print("Scale StDev is too high (" + str(round(np.std(BIGdata_raw), 2)) + "), reading again...")
             BIGdata_raw1 = BIGdata_raw
             time.sleep(2)
-            BIGdata_raw = read_scale(READINGS=HX_NUM_READS, DATAPIN=BIG_DATA_PIN, CLOCKPIN=BIG_CLOCK_PIN)        # Read big scale again
+            BIGdata_raw = read_scale(READINGS=HX_NUM_READS,
+                                     DATAPIN=BIG_DATA_PIN,
+                                     CLOCKPIN=BIG_CLOCK_PIN)  # Read big again
             if np.std(BIGdata_raw) > HX_STDEV_THRESHOLD:
-                print("Scale StDev is still too high")
+                print("BIG Scale StDev is still too high")
+                print("Raw: {}".format(BIGdata_raw))
                 if np.std(BIGdata_raw) < np.std(BIGdata_raw1):
+                    print("Better STD found")
                     BIGdata_raw1 = BIGdata_raw
                 else:
                     BIGdata_raw = BIGdata_raw1
             else:
                 print("Better reading recorded after " + str(i) + " tries")
-                logger.info("BigHX Retries: " + str(i))
+                logger.info("BigHX Retries: " + str(i), exc_info=True)
                 Notes = Notes + "BigHX Retries: " + str(i)
                 break
         if i >= RETRY_ATTEMPTS + 2:
@@ -214,7 +218,7 @@ try:
             IFTTTmsg(str(i) + " retries for BigHX")
             BIGdata_raw = BIGdata_raw1
     else:
-        print("StDev is below threshold of " + str(HX_STDEV_THRESHOLD))
+        print("BIG StDev is below threshold of " + str(HX_STDEV_THRESHOLD))
     print(round(np.median(BIGdata_raw), 2), round(np.std(BIGdata_raw), 2))
     BIGdata = 0.0002311996 * np.median(BIGdata_raw) + 7.4413911706      # convert raw to meaningful
     print(round(np.median(BIGdata), 2))
@@ -236,14 +240,16 @@ try:
             time.sleep(2)
             SMLdata_raw = read_scale(READINGS=HX_NUM_READS, DATAPIN=SML_DATA_PIN, CLOCKPIN=SML_CLOCK_PIN)        # Read small scale again
             if np.std(SMLdata_raw) > HX_STDEV_THRESHOLD:
-                print("Scale StDev is still too high")
+                print("SML Scale StDev is still too high")
+                print("Raw: {}".format(SMLdata_raw))
                 if np.std(SMLdata_raw) < np.std(SMLdata_raw1):
+                    print("Better STD found")
                     SMLdata_raw1 = SMLdata_raw
                 else:
                     SMLdata_raw = SMLdata_raw1
             else:
                 print("Better reading recorded after " + str(i) + " tries")
-                logger.info("Sml HX Retries: " + str(i))
+                logger.info("Sml HX Retries: " + str(i), exc_info=True)
                 Notes = Notes + "SmlHX Retries: " + str(i)
                 break
         if i >= RETRY_ATTEMPTS:
@@ -251,7 +257,7 @@ try:
             IFTTTmsg(str(i) + " retries for SmlHX")
             SMLdata_raw = SMLdata_raw1
     else:
-        print("StDev is below threshold of " + str(HX_STDEV_THRESHOLD))
+        print("SML StDev is below threshold of " + str(HX_STDEV_THRESHOLD))
     print(round(np.median(SMLdata_raw), 2), round(np.std(SMLdata_raw), 2))
     SMLdata = 0.0001398789 * np.median(SMLdata_raw) + 208.9558945667      # convert raw to meaningful
     print(round(np.median(SMLdata), 2))
@@ -261,26 +267,32 @@ try:
     SMLdata = SMLdata + SMLoffset
     # print(round(np.median(SMLdata), 2))
 
+    time.sleep(5)
+
     # Dummy HX711 for calibration
     DUMMY_DATA_PIN = 6
     DUMMY_CLOCK_PIN = 5
+    DUMMY_STDEV_THRESHOLD = HX_STDEV_THRESHOLD * 3
+    GPIO.setup(DUMMY_DATA_PIN, GPIO.IN, pull_up_down=GPIO.PUD_DOWN)
     # print("Read DUMMY Scale")
     DUMMYdata_raw = read_scale(READINGS=HX_NUM_READS, DATAPIN=DUMMY_DATA_PIN, CLOCKPIN=DUMMY_CLOCK_PIN)      # Read DUMMY scale
-    if np.std(DUMMYdata_raw) > HX_STDEV_THRESHOLD:
+    if np.std(DUMMYdata_raw) > DUMMY_STDEV_THRESHOLD:    # this is double for dummy
         for i in range(2, RETRY_ATTEMPTS + 2):
-            print("Scale StDev is too high (" + str(round(np.std(DUMMYdata_raw), 2)) + "), reading again...")
+            print("DUMMY Scale StDev is too high (" + str(round(np.std(DUMMYdata_raw), 2)) + "), reading again...")
             DUMMYdata_raw1 = DUMMYdata_raw
             time.sleep(2)
             DUMMYdata_raw = read_scale(READINGS=HX_NUM_READS, DATAPIN=DUMMY_DATA_PIN, CLOCKPIN=DUMMY_CLOCK_PIN)        # Read DUMMY scale again
-            if np.std(DUMMYdata_raw) > HX_STDEV_THRESHOLD:
-                print("DUMMY Scale StDev is still too high")
+            if np.std(DUMMYdata_raw) > DUMMY_STDEV_THRESHOLD:
+                print("DUMMY Scale StDev is still too high: {}".format(round(np.std(DUMMYdata_raw), 2)))
+                print("Raw: {}".format(DUMMYdata_raw))
                 if np.std(DUMMYdata_raw) < np.std(DUMMYdata_raw1):
+                    print("Better STD found")
                     DUMMYdata_raw1 = DUMMYdata_raw
                 else:
                     DUMMYdata_raw = DUMMYdata_raw1
             else:
                 print("Better reading recorded after " + str(i) + " tries")
-                logger.info("DUMMY HX Retries: " + str(i))
+                logger.info("DUMMY HX Retries: " + str(i), exc_info=True)
                 Notes = Notes + "DUMMYHX Retries: " + str(i)
                 break
         if i >= RETRY_ATTEMPTS:
@@ -288,10 +300,10 @@ try:
             IFTTTmsg(str(i) + " retries for DUMMYHX")
             DUMMYdata_raw = DUMMYdata_raw1
     else:
-        print("StDev is below threshold of " + str(HX_STDEV_THRESHOLD))
+        print("DUMMY StDev is below threshold of " + str(DUMMY_STDEV_THRESHOLD))
     print("DUMMY Raw: {}".format(DUMMYdata_raw))
     print(round(np.median(DUMMYdata_raw), 2), round(np.std(DUMMYdata_raw), 2))
-    DUMMYdata = 0.0001398789 * np.median(DUMMYdata_raw) + 208.9558945667      # convert raw to meaningful
+    DUMMYdata = 0.0001 * np.median(DUMMYdata_raw) - 70      # convert raw to meaningful
     print(round(np.median(DUMMYdata), 2))
     # DUMMYoffset = -0.0033135985 * np.median(BIGhumidity) + 0.357458148      # temp calibration with fewer data points than big scale
     DUMMYoffset = -0.0059644774 * np.median(BIGhumidity) + 0.2514229949      # humid calibration with fewer data points than big scale
@@ -301,6 +313,7 @@ try:
 
     BigMedian = round(np.median(BIGdata), 2)
     SmlMedian = round(np.median(SMLdata), 2)
+    DUMMYMedian = round(np.median(DUMMYdata), 2)
     BigTempMedian = round(np.median(BIGtemperature), 2)
     BigHumMedian = round(np.median(BIGhumidity), 2)
     SmlTempMedian = round(np.median(SMLtemperature), 2)
@@ -324,7 +337,7 @@ try:
         # print(filecontents.info())
         n = filecontents["WBigMed"].count()
         if n <= low_datapoint_threshold:
-            logger.info("Using yesterday log due to n(" + str(n) + ")<=" + str(low_datapoint_threshold))
+            logger.info("Using yesterday log due to n(" + str(n) + ")<=" + str(low_datapoint_threshold), exc_info=True)
             DailyLogFile = "/home/pi/Documents/Code/" + YESTERDAY.strftime(FILE_DATE_FORMAT) + "_WeightLog.csv"
             with open(DailyLogFile, "r") as inputfile:
                 # print(inputfile)
@@ -343,12 +356,12 @@ try:
     print(low_outlier_threshold, high_outlier_threshold)
     if BigMedian <= low_outlier_threshold:
         problem_msg = "BigMedian Outlier Reading " + str(BigMedian) + "<" + str(low_outlier_threshold) + ", " + str(n)
-        logger.info(problem_msg)
+        logger.info(problem_msg, exc_info=True)
         IFTTTmsg(problem_msg)
         # BigMedian = np.nan
     elif BigMedian >= high_outlier_threshold:
         problem_msg = "BigMedian Outlier Reading " + str(BigMedian) + ">" + str(high_outlier_threshold) + ", " + str(n)
-        logger.info(problem_msg)
+        logger.info(problem_msg, exc_info=True)
         IFTTTmsg(problem_msg)
         # BigMedian = np.nan
     else:
@@ -367,7 +380,7 @@ try:
         + str(BigRawStdev) + COMMA                              \
         + str(SmlRaw) + COMMA                                   \
         + str(SmlRawStdev) + COMMA                              \
-        + str(DUMMYdata) + COMMA                                \
+        + str(DUMMYMedian) + COMMA                                \
         + str(DUMMYRaw) + COMMA                                 \
         + str(DUMMYRawStdev) + COMMA                            \
         + Notes + "\n"
@@ -379,8 +392,9 @@ try:
     # calculate()     # use if need to force a calculate
 
 except:
+    logging.exception("Exception")
+    logger.info("Exception Encountered", exc_info=True)
     IFTTTmsg("WeightMonitor Exception")
-    logging.exception("WeightMonitor Exception")
     raise
     # print("Exception")
 

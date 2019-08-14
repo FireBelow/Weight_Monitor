@@ -63,7 +63,7 @@ try:
     # Notes = Notes + str(i) + " retries for SmlHX"
 
     LogFileName = "/home/pi/Documents/Code/Log/TodayPlot.log"
-    logger = logging.getLogger("TodayPlot")
+    logger = logging.getLogger(__name__)
     logger.setLevel(logging.INFO)
 
     # create the logging file handler
@@ -284,8 +284,9 @@ try:
     # IFTTTmsg('TodayPlot Success!')
 
 except:
-    IFTTTmsg('TodayPlot Exception')
     logging.exception("TodayPlot Exception")
+    logger.info("Exception Encountered", exc_info=True)
+    IFTTTmsg('TodayPlot Exception')
     raise
     # print("Exception")
 
